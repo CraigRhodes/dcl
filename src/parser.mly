@@ -27,12 +27,12 @@ open Ast
 %type <Ast.program> program
 
 %%
-
+(* this is the CFG for this language*)
 program:
-  decls EOF { $1 }
+  decls EOF { $1 } (* $1 = just return decls *)
 
 decls:
-   /* nothing */ { [], [] }
+   /* nothing */ { [], [] } (* this is saying decls can be empty -- also ends the recursive -> an empty program is accepted*)
  | decls vdecl { ($2 :: fst $1), snd $1 }
  | decls fdecl { fst $1, ($2 :: snd $1) }
 
@@ -54,6 +54,7 @@ formal_list:
 
 typ:
     INT { Int }
+  | Double {Double }
   | BOOL { Bool }
   | VOID { Void }
 
