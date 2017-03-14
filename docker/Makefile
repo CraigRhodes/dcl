@@ -8,5 +8,8 @@ docker:
 commit:
 	docker commit `docker ps -q -l` craigrhodes/dcl
 
-push: commit
+push: 
 	docker push craigrhodes/dcl
+
+test:
+	docker run -v "`pwd`/../src:/home/dcl-user/dcl" -it --entrypoint=./testall.sh craigrhodes/dcl
