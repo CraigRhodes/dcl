@@ -1,0 +1,20 @@
+machine:
+	services:
+		- docker
+
+dependencies:
+	pre:
+		- sudo apt-get install make
+	override:
+		- docker info
+		- docker pull craigrhodes/dcl
+
+test:
+	override:
+		- make -C docker test
+
+deployment:
+	prod:
+		branch: master
+		commands:
+			- make -C docker compile
