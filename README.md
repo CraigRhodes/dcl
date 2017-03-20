@@ -9,22 +9,22 @@ This is the home for DCL - a new callback-based programming language.
 ## Generate compiler
 
 To generate the compiler executable:  
-  `cd docker`
-  `make compile`
+  `cd docker`  
+  `make compile`  
 
 ## Run tests  
 
 To run tests:  
-  `cd docker`
-  `make test`
+  `cd docker`  
+  `make test`  
 
 ## Docker
 
 To compile:  
   `cd docker`  
-  `make # This puts you inside the docker container ` 
-  `make # This makes the executable`
-  `./microc.native < <filename>`
+  `make # This puts you inside the docker container`   
+  `make # This makes the executable`  
+  `./microc.native < <filename>`  
 OR  
 Run the following command inside the docker environment:  
   `compile <filename>`  
