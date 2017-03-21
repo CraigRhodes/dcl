@@ -24,7 +24,7 @@ remove:
 push: 
 	docker push craigrhodes/dcl
 
-test: compile
+test: clean compile
 	docker run --rm -v "`pwd`/../src:/home/dcl-user/dcl" -it --entrypoint=./testall.sh craigrhodes/dcl
 
 clean:
