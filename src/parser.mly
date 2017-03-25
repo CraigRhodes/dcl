@@ -7,8 +7,8 @@ open Ast
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT BOOL VOID
-%token <int> LITERAL
+%token RETURN IF ELSE FOR WHILE INT VOID
+%token <int> INTLITERAL
 %token <string> ID
 %token EOF
 
@@ -54,7 +54,6 @@ formal_list:
 
 typ:
     INT { Int }
-  | BOOL { Bool }
   | VOID { Void }
 
 vdecl_list:
@@ -84,9 +83,7 @@ expr_opt:
   | expr          { $1 }
 
 expr:
-    LITERAL          { Literal($1) }
-  | TRUE             { BoolLit(true) }
-  | FALSE            { BoolLit(false) }
+    INTLITERAL          { IntLiteral($1) }
   | ID               { Id($1) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
