@@ -10,8 +10,8 @@ ocamlfind ocamldep -package llvm.analysis -package llvm -modules codegen.ml > co
 # Target: parser.mly, tags: { extension:mly, file:parser.mly, ocaml, ocamlyacc, package(llvm), package(llvm.analysis), parser, quiet }
 /usr/bin/ocamlyacc parser.mly
 + /usr/bin/ocamlyacc parser.mly
-File "parser.mly", line 108: syntax error
-  FLOAT_LITERAL {Float_Lit($1)}}
+File "parser.mly", line 109: syntax error
+  STRING_LITERAL {String_Lit($1)}
   ^
 Command exited with code 1.
 # Compilation unsuccessful.

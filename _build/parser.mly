@@ -6,7 +6,7 @@
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT VOID
 %token <int> INT_LITERAL
-%token<float> FLOAT_LITERAL
+/*%token<float> FLOAT_LITERAL */
 %token<string> STRING_LITERAL
 %token <string> 
 %token<char> CHAR_LITERAL
@@ -105,7 +105,7 @@ expr:
 
 literals:
   INT_LITERAL   {Int_Lit($1))}
-  FLOAT_LITERAL {Float_Lit($1)}}
+  /*FLOAT_LITERAL {Float_Lit($1)}} */
   STRING_LITERAL {String_Lit($1)}
   CHAR_LITERAL {Char_Lit($1)}
   ID            {Id($1)}
