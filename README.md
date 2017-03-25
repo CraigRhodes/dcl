@@ -40,11 +40,13 @@ To compile and run inside docker container:
 'e.g.' refers to the MicroC example
 
   `First Step`
+  
   add .c file containing the functions to src directory
 
   e.g.: printbig.c
 
   `Second Step`
+  
   in codegen.ml, declare those functions as built-in
 
   e.g.:
@@ -53,6 +55,7 @@ To compile and run inside docker container:
   let printbig_func = L.declare_function "printbig" printbig_t the_module in
 
   `Third Step`
+  
   in semant.ml, add those functions to "function declarations for a named function"
 
   e.g.:
@@ -66,6 +69,7 @@ let built_in_decls =  StringMap.add "print"
    in
 
   `Fourth Step`:
+  
   add compilation for those functions to Makefile
 
   e.g.:
@@ -73,6 +77,7 @@ printbig : printbig.c
 	cc -o printbig -DBUILD_TEST printbig.c
 
   `Fifth Step`:
+  
   link in .o files and generate executables in test driver (testall.sh)
 
   e.g.:
@@ -85,6 +90,7 @@ generatedfiles="$generatedfiles ${basename}.ll ${basename}.s ${basename}.exe ${b
 
 
   `Summary`:
+  
   for printbig function in the MicroC example:
   The stock C compiler compiles printbig.o.  testall.sh runs the microc
 executable on each testcase (.mc file) to produce a .ll file, invokes
