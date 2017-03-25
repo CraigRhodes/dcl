@@ -1,0 +1,7 @@
+### Starting build.
+# Target: microc.ml.depends, tags: { extension:ml, file:microc.ml, ocaml, ocamldep, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamldep -package llvm.analysis -package llvm -modules microc.ml > microc.ml.depends
++ ocamlfind ocamldep -package llvm.analysis -package llvm -modules microc.ml > microc.ml.depends
+/bin/sh: 1: ocamlfind: not found
+Command exited with code 127.
+# Compilation unsuccessful.
