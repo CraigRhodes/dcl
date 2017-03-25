@@ -1,17 +1,19 @@
-/* Ocamlyacc parser for MicroC */
-
-%{
-open Ast
-%}
+/*DCL Parser based off of MicroC */
+%{ open Ast %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID
-%token <int> LITERAL
+%token <int> INT_LITERAL
+%token<float> FLOAT_LITERAL
+%token<string> STRING_LITERAL
 %token <string> ID
+%token<char> CHAR_LITERAL
 %token EOF
 
+
+/*Dealing with precedence and associativity in the language */
 %nonassoc NOELSE
 %nonassoc ELSE
 %right ASSIGN
@@ -20,7 +22,7 @@ open Ast
 %left EQ NEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS
-%left TIMES DIVIDE
+%left TIMES DIVIDE 
 %right NOT NEG
 
 %start program
@@ -33,9 +35,12 @@ program:
 
 decls:
    /* nothing */ { [], [] }
- | decls vdecl { ($2 :: fst $1), snd $1 }
- | decls fdecl { fst $1, ($2 :: snd $1) }
+ | decls vdecl { ($2 :: fst $1), snd $1 } /*decl for class*/
+ | decls fdecl { fst $1, ($2 :: snd $1) } /*decl for functions */
 
+
+
+/* function declarations */
 fdecl:
    typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
      { { typ = $1;
@@ -52,8 +57,12 @@ formal_list:
     typ ID                   { [($1,$2)] }
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
 
+/* data types */
 typ:
     INT { Int }
+  | DOUBLE {Double}
+  | STRING {String}
+  | CHAR {Char}
   | BOOL { Bool }
   | VOID { Void }
 
@@ -84,7 +93,7 @@ expr_opt:
   | expr          { $1 }
 
 expr:
-    LITERAL          { Literal($1) }
+    literals          { Literal($1) }
   | TRUE             { BoolLit(true) }
   | FALSE            { BoolLit(false) }
   | ID               { Id($1) }
@@ -106,6 +115,12 @@ expr:
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
 
+literals:
+  INT_LITERAL   {Int_Lit($1))}
+  FLOAT_LITERAL {Float_Lit($1)}}
+  STRING_LITERAL {String_Lit($1)}
+  CHAR_LITERAL {Char_Lit($1)}
+  ID            {Id($1)}
 actuals_opt:
     /* nothing */ { [] }
   | actuals_list  { List.rev $1 }
