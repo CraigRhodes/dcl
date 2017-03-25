@@ -1,9 +1,9 @@
 void foo() {}
 
-int bar(int a, bool b, int c) { return a + c; }
+int bar(int a, int c) { return a + c; }
 
 int main()
 {
-  print(bar(17, false, 25));
+  print(bar(17, 25));
   return 0;
 }
