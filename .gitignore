@@ -1,2 +1,4 @@
+src/_build
 .DS_Store
-*.swp
+microc.native
+*.o
