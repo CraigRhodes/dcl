@@ -3,7 +3,7 @@
 default: docker 
 
 docker:
-	docker run --rm --name DCL -v "`pwd`/../src:/home/dcl-user/dcl" -it craigrhodes/dcl /bin/bash
+	docker run --rm --name DCL -v "`pwd`/../src:/home/dcl-user/dcl" -it craigrhodes/dcl 
 
 commit:
 	docker commit DCL craigrhodes/dcl
@@ -12,7 +12,7 @@ compile:
 	docker run --rm -v "`pwd`/../src:/home/dcl-user/dcl" --entrypoint=make -it craigrhodes/dcl
 
 modify:
-	docker run --name DCL -v "`pwd`/../src:/home/dcl-user/dcl" -it craigrhodes/dcl /bin/bash
+	docker run --name DCL -v "`pwd`/../src:/home/dcl-user/dcl" -it craigrhodes/dcl 
 
 build:
 	docker build -t craigrhodes/dcl .
