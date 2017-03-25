@@ -7,11 +7,32 @@ ocamlfind ocamldep -package llvm.analysis -package llvm -modules ast.ml > ast.ml
 ocamlfind ocamlc -c -w +a-4 -package llvm.analysis -package llvm -o ast.cmo ast.ml # cached
 # Target: codegen.ml.depends, tags: { extension:ml, file:codegen.ml, ocaml, ocamldep, package(llvm), package(llvm.analysis), quiet }
 ocamlfind ocamldep -package llvm.analysis -package llvm -modules codegen.ml > codegen.ml.depends # cached
+# Target: codegen.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:codegen.cmo, file:codegen.ml, implem, ocaml, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamlc -c -w +a-4 -package llvm.analysis -package llvm -o codegen.cmo codegen.ml # cached
 # Target: parser.mly, tags: { extension:mly, file:parser.mly, ocaml, ocamlyacc, package(llvm), package(llvm.analysis), parser, quiet }
-/usr/bin/ocamlyacc parser.mly
-+ /usr/bin/ocamlyacc parser.mly
-File "parser.mly", line 109: syntax error
-  STRING_LITERAL {String_Lit($1)}
-  ^
-Command exited with code 1.
+/usr/bin/ocamlyacc parser.mly # cached
+# Target: parser.mli.depends, tags: { extension:mli, file:parser.mli, ocaml, ocamldep, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamldep -package llvm.analysis -package llvm -modules parser.mli > parser.mli.depends # cached
+# Target: parser.cmi, tags: { byte, compile, extension:mli, file:parser.mli, interf, ocaml, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamlc -c -w +a-4 -package llvm.analysis -package llvm -o parser.cmi parser.mli # cached
+# Target: scanner.mll, tags: { extension:mll, file:scanner.mll, lexer, ocaml, ocamllex, package(llvm), package(llvm.analysis), quiet }
+/usr/bin/ocamllex -q scanner.mll # cached
+# Target: scanner.ml.depends, tags: { extension:ml, file:scanner.ml, ocaml, ocamldep, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamldep -package llvm.analysis -package llvm -modules scanner.ml > scanner.ml.depends # cached
+# Target: scanner.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:scanner.cmo, file:scanner.ml, implem, ocaml, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamlc -c -w +a-4 -package llvm.analysis -package llvm -o scanner.cmo scanner.ml # cached
+# Target: semant.ml.depends, tags: { extension:ml, file:semant.ml, ocaml, ocamldep, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamldep -package llvm.analysis -package llvm -modules semant.ml > semant.ml.depends # cached
+# Target: semant.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:semant.cmo, file:semant.ml, implem, ocaml, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamlc -c -w +a-4 -package llvm.analysis -package llvm -o semant.cmo semant.ml # cached
+# Target: microc.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:microc.cmo, file:microc.ml, implem, ocaml, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamlc -c -w +a-4 -package llvm.analysis -package llvm -o microc.cmo microc.ml # cached
+# Target: ast.cmx, tags: { compile, extension:cmx, extension:ml, file:ast.cmx, file:ast.ml, implem, native, ocaml, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamlopt -c -w +a-4 -package llvm.analysis -package llvm -o ast.cmx ast.ml # cached
+# Target: parser.ml.depends, tags: { extension:ml, file:parser.ml, ocaml, ocamldep, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamldep -package llvm.analysis -package llvm -modules parser.ml > parser.ml.depends
++ ocamlfind ocamldep -package llvm.analysis -package llvm -modules parser.ml > parser.ml.depends
+File "parser.ml", line 692, characters 27-28:
+Error: Syntax error
+Command exited with code 2.
 # Compilation unsuccessful.

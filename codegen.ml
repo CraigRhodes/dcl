@@ -85,7 +85,7 @@ let translate (globals, functions) =
 
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
-	A.IntLiteral i -> L.const_int i32_t i
+	A.Int_Lit i -> L.const_int i32_t i
       | A.Noexpr -> L.const_int i32_t 0
       | A.Id s -> L.build_load (lookup s) s builder
       | A.Binop (e1, op, e2) ->

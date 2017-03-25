@@ -63,7 +63,7 @@ let string_of_uop = function
   | Not -> "!"
 
 let rec string_of_expr = function
-    IntLiteral(l) -> string_of_int l
+    Int_Lit(l) -> string_of_int l
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2

@@ -1,4 +1,4 @@
-(* Abstract Syntax Tree and functions for printing it *)
+(* DCL Abstract Syntax Tree and functions for printing it *)
 
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or
@@ -6,11 +6,15 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 type uop = Neg | Not
 
 type typ = Int | Void
+type primitive = Int_t | Float_t | Void_t | Char_t  
 
 type bind = typ * string
 
 type expr =
-    IntLiteral of int
+    Int_Lit of int
+  | Float_Lit of float
+  | String_Lit of string
+  | Char_Lit of char
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -25,6 +29,8 @@ type stmt =
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
   | While of expr * stmt
+  | Break
+  | Continue
 
 type func_decl = {
     typ : typ;
@@ -57,7 +63,7 @@ let string_of_uop = function
   | Not -> "!"
 
 let rec string_of_expr = function
-    IntLiteral(l) -> string_of_int l
+    Int_Lit(l) -> string_of_int l
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
