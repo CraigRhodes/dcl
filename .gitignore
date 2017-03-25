@@ -1,0 +1,4 @@
+src/_build
+.DS_Store
+microc.native
+*.o
