@@ -1,15 +1,16 @@
-/* Ocamlyacc parser for MicroC */
+/*DCL Parser based off of MicroC */
+%{ open Ast %}
 
-%{
-open Ast
-%}
-
+%token INT FLOAT CHAR VOID NULL STRING
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT VOID
-%token <int> INTLITERAL
+%token RETURN IF ELSE FOR WHILE  
+%token <int> INT_LITERAL
+%token<float> FLOAT_LITERAL 
+%token<string> STRING_LITERAL
 %token <string> ID
+%token<char> CHAR_LITERAL
 %token EOF
 
 %nonassoc NOELSE
@@ -55,6 +56,7 @@ formal_list:
 typ:
     INT { Int }
   | VOID { Void }
+  | STRING {String}
 
 vdecl_list:
     /* nothing */    { [] }
@@ -83,8 +85,11 @@ expr_opt:
   | expr          { $1 }
 
 expr:
-    INTLITERAL          { IntLiteral($1) }
-  | ID               { Id($1) }
+  INT_LITERAL   {Int_Lit($1)} 
+  | FLOAT_LITERAL {Float_Lit($1)} 
+  | STRING_LITERAL {String_Lit($1)}
+  |CHAR_LITERAL {Char_Lit($1)}
+  |ID             { Id($1) } 
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
   | expr TIMES  expr { Binop($1, Mult,  $3) }
@@ -102,6 +107,8 @@ expr:
   | ID ASSIGN expr   { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
+
+
 
 actuals_opt:
     /* nothing */ { [] }

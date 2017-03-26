@@ -47,13 +47,17 @@ let check (globals, functions) =
     (List.map (fun fd -> fd.fname) functions);
 
   (* Function declaration for a named function *)
+
+  let built_in_decls = StringMap.empty in 
   let built_in_decls =  StringMap.add "print"
      { typ = Void; fname = "print"; formals = [(Int, "x")];
-       locals = []; body = [] }
-     (StringMap.singleton "printbig"
+       locals = []; body = [] } built_in_decls in 
+     let built_in_decls = StringMap.add "printbig"
      { typ = Void; fname = "printbig"; formals = [(Int, "x")];
-       locals = []; body = [] })
-   in
+       locals = []; body = [] } built_in_decls in
+      let built_in_decls = StringMap.add "prints" 
+       { typ = Void; fname = "prints"; formals = [(String, "x")];
+     locals = []; body = [] } built_in_decls in
      
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
                          built_in_decls functions
@@ -91,7 +95,8 @@ let check (globals, functions) =
 
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
-	IntLiteral _ -> Int
+	     Int_Lit _-> Int
+       | String_Lit _-> String 
       | Id s -> type_of_identifier s
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
 	(match op with
