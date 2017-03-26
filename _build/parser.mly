@@ -85,7 +85,11 @@ expr_opt:
   | expr          { $1 }
 
 expr:
-  literals          { Literal($1) } 
+  INT_LITERAL   {Int_Lit($1)} 
+  | FLOAT_LITERAL {Float_Lit($1)} 
+  | STRING_LITERAL {String_Lit($1)}
+  |CHAR_LITERAL {Char_Lit($1)}
+  |ID             { Id($1) } 
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
   | expr TIMES  expr { Binop($1, Mult,  $3) }
@@ -104,13 +108,7 @@ expr:
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
 
-literals:
-  INT_LITERAL   {Int_Lit($1))} 
-  | FLOAT_LITERAL {Float_Lit($1)} 
-  | STRING_LITERAL {String_Lit($1)}
-  |CHAR_LITERAL {Char_Lit($1)}
-  |ID             { Id($1) }  
-  | NULL            { Null } 
+
 
 actuals_opt:
     /* nothing */ { [] }

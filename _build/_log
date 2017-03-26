@@ -10,7 +10,7 @@ ocamlfind ocamldep -package llvm.analysis -package llvm -modules codegen.ml > co
 # Target: codegen.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:codegen.cmo, file:codegen.ml, implem, ocaml, package(llvm), package(llvm.analysis), quiet }
 ocamlfind ocamlc -c -w +a-4 -package llvm.analysis -package llvm -o codegen.cmo codegen.ml # cached
 # Target: parser.mly, tags: { extension:mly, file:parser.mly, ocaml, ocamlyacc, package(llvm), package(llvm.analysis), parser, quiet }
-/usr/bin/ocamlyacc parser.mly # cached
+/usr/bin/ocamlyacc parser.mly
 # Target: parser.mli.depends, tags: { extension:mli, file:parser.mli, ocaml, ocamldep, package(llvm), package(llvm.analysis), quiet }
 ocamlfind ocamldep -package llvm.analysis -package llvm -modules parser.mli > parser.mli.depends # cached
 # Target: parser.cmi, tags: { byte, compile, extension:mli, file:parser.mli, interf, ocaml, package(llvm), package(llvm.analysis), quiet }
@@ -31,8 +31,38 @@ ocamlfind ocamlc -c -w +a-4 -package llvm.analysis -package llvm -o microc.cmo m
 ocamlfind ocamlopt -c -w +a-4 -package llvm.analysis -package llvm -o ast.cmx ast.ml # cached
 # Target: parser.ml.depends, tags: { extension:ml, file:parser.ml, ocaml, ocamldep, package(llvm), package(llvm.analysis), quiet }
 ocamlfind ocamldep -package llvm.analysis -package llvm -modules parser.ml > parser.ml.depends
-+ ocamlfind ocamldep -package llvm.analysis -package llvm -modules parser.ml > parser.ml.depends
-File "parser.ml", line 715, characters 27-28:
-Error: Syntax error
-Command exited with code 2.
-# Compilation unsuccessful.
+# Target: parser.cmx, tags: { compile, extension:cmx, extension:ml, file:parser.cmx, file:parser.ml, implem, native, ocaml, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamlopt -c -w +a-4 -package llvm.analysis -package llvm -o parser.cmx parser.ml
+# Target: codegen.cmx, tags: { compile, extension:cmx, extension:ml, file:codegen.cmx, file:codegen.ml, implem, native, ocaml, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamlopt -c -w +a-4 -package llvm.analysis -package llvm -o codegen.cmx codegen.ml
++ ocamlfind ocamlopt -c -w +a-4 -package llvm.analysis -package llvm -o codegen.cmx codegen.ml
+File "codegen.ml", line 91, characters 27-1818:
+Warning 8: this pattern-matching is not exhaustive.
+Here is an example of a value that is not matched:
+(Float_Lit _|Char_Lit _)
+File "codegen.ml", line 144, characters 27-1566:
+Warning 8: this pattern-matching is not exhaustive.
+Here is an example of a value that is not matched:
+(Break|Continue)
+File "codegen.ml", line 26, characters 6-10:
+Warning 26: unused variable i1_t.
+File "codegen.ml", line 65, characters 8-24:
+Warning 26: unused variable float_format_str.
+# Target: scanner.cmx, tags: { compile, extension:cmx, extension:ml, file:scanner.cmx, file:scanner.ml, implem, native, ocaml, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamlopt -c -w +a-4 -package llvm.analysis -package llvm -o scanner.cmx scanner.ml
+# Target: semant.cmx, tags: { compile, extension:cmx, extension:ml, file:semant.cmx, file:semant.ml, implem, native, ocaml, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamlopt -c -w +a-4 -package llvm.analysis -package llvm -o semant.cmx semant.ml
++ ocamlfind ocamlopt -c -w +a-4 -package llvm.analysis -package llvm -o semant.cmx semant.ml
+File "semant.ml", line 97, characters 19-1753:
+Warning 8: this pattern-matching is not exhaustive.
+Here is an example of a value that is not matched:
+(Float_Lit _|Char_Lit _)
+File "semant.ml", line 141, characters 19-825:
+Warning 8: this pattern-matching is not exhaustive.
+Here is an example of a value that is not matched:
+(Break|Continue)
+# Target: microc.cmx, tags: { compile, extension:cmx, extension:ml, file:microc.cmx, file:microc.ml, implem, native, ocaml, package(llvm), package(llvm.analysis), quiet }
+ocamlfind ocamlopt -c -w +a-4 -package llvm.analysis -package llvm -o microc.cmx microc.ml
+# Target: microc.native, tags: { dont_link_with, extension:native, file:microc.native, link, native, ocaml, package(llvm), package(llvm.analysis), program, quiet }
+ocamlfind ocamlopt -linkpkg -package llvm.analysis -package llvm ast.cmx codegen.cmx parser.cmx scanner.cmx semant.cmx microc.cmx -o microc.native
+# Compilation successful.
