@@ -62,7 +62,7 @@ let translate (globals, functions) =
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder 
-    and float_format_str = L.build_global_stringptr "%f\t" "fmt" builder
+    and float_format_str = L.build_global_stringptr "%f\n" "fmt" builder
     and string_format_str = L.build_global_stringptr "%s\n" "fmt" builder
     in 
     (* Construct the function's "locals": formal arguments and locally
