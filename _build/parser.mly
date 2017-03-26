@@ -1,11 +1,11 @@
 /*DCL Parser based off of MicroC */
 %{ open Ast %}
 
-%token INT FLOAT CHAR VOID NULL 
+%token INT FLOAT CHAR VOID NULL STRING
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT VOID
+%token RETURN IF ELSE FOR WHILE  
 %token <int> INT_LITERAL
 %token<float> FLOAT_LITERAL 
 %token<string> STRING_LITERAL
@@ -56,6 +56,7 @@ formal_list:
 typ:
     INT { Int }
   | VOID { Void }
+  | STRING {String}
 
 vdecl_list:
     /* nothing */    { [] }
@@ -84,7 +85,7 @@ expr_opt:
   | expr          { $1 }
 
 expr:
-  literals          { Literal($1) }
+  literals          { Literal($1) } 
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
   | expr TIMES  expr { Binop($1, Mult,  $3) }
@@ -104,12 +105,12 @@ expr:
   | LPAREN expr RPAREN { $2 }
 
 literals:
-  INT_LITERAL   {Int_Lit($1))}
+  INT_LITERAL   {Int_Lit($1))} 
   | FLOAT_LITERAL {Float_Lit($1)} 
-  |STRING_LITERAL {String_Lit($1)}
+  | STRING_LITERAL {String_Lit($1)}
   |CHAR_LITERAL {Char_Lit($1)}
   |ID             { Id($1) }  
-  | NULL            { Null }
+  | NULL            { Null } 
 
 actuals_opt:
     /* nothing */ { [] }

@@ -10,7 +10,7 @@ ocamlfind ocamldep -package llvm.analysis -package llvm -modules codegen.ml > co
 # Target: codegen.cmo, tags: { byte, compile, extension:cmo, extension:ml, file:codegen.cmo, file:codegen.ml, implem, ocaml, package(llvm), package(llvm.analysis), quiet }
 ocamlfind ocamlc -c -w +a-4 -package llvm.analysis -package llvm -o codegen.cmo codegen.ml # cached
 # Target: parser.mly, tags: { extension:mly, file:parser.mly, ocaml, ocamlyacc, package(llvm), package(llvm.analysis), parser, quiet }
-/usr/bin/ocamlyacc parser.mly # cached
+/usr/bin/ocamlyacc parser.mly
 # Target: parser.mli.depends, tags: { extension:mli, file:parser.mli, ocaml, ocamldep, package(llvm), package(llvm.analysis), quiet }
 ocamlfind ocamldep -package llvm.analysis -package llvm -modules parser.mli > parser.mli.depends # cached
 # Target: parser.cmi, tags: { byte, compile, extension:mli, file:parser.mli, interf, ocaml, package(llvm), package(llvm.analysis), quiet }
@@ -32,7 +32,7 @@ ocamlfind ocamlopt -c -w +a-4 -package llvm.analysis -package llvm -o ast.cmx as
 # Target: parser.ml.depends, tags: { extension:ml, file:parser.ml, ocaml, ocamldep, package(llvm), package(llvm.analysis), quiet }
 ocamlfind ocamldep -package llvm.analysis -package llvm -modules parser.ml > parser.ml.depends
 + ocamlfind ocamldep -package llvm.analysis -package llvm -modules parser.ml > parser.ml.depends
-File "parser.ml", line 692, characters 27-28:
+File "parser.ml", line 715, characters 27-28:
 Error: Syntax error
 Command exited with code 2.
 # Compilation unsuccessful.

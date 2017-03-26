@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Void
+type typ = Int | Void | String 
 type primitive = Int_t | Float_t | Void_t | Char_t  
 
 type bind = typ * string
@@ -64,6 +64,8 @@ let string_of_uop = function
 
 let rec string_of_expr = function
     Int_Lit(l) -> string_of_int l
+  | Float_Lit(l) -> string_of_float l
+  | String_Lit(str) -> str
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
@@ -89,6 +91,7 @@ let rec string_of_stmt = function
 let string_of_typ = function
     Int -> "int"
   | Void -> "void"
+  | String -> "string"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

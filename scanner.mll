@@ -67,7 +67,7 @@ rule token = parse
 | "int"    { INT }
 | "double" { FLOAT }
 | "void"   { VOID }
-
+| "string"  {STRING}
 
 | integer as lxm { INT_LITERAL(int_of_string lxm) }
 | double as lxm { FLOAT_LITERAL(float_of_string lxm) } 

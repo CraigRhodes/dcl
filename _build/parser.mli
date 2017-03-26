@@ -4,6 +4,7 @@ type token =
   | CHAR
   | VOID
   | NULL
+  | STRING
   | SEMI
   | LPAREN
   | RPAREN

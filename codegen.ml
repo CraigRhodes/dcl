@@ -22,11 +22,13 @@ let translate (globals, functions) =
   let the_module = L.create_module context "MicroC"
   and i32_t  = L.i32_type  context
   and i8_t   = L.i8_type   context
+  and str_t    = L.pointer_type (L.i8_type context)
   and i1_t   = L.i1_type   context
   and void_t = L.void_type context in
 
   let ltype_of_typ = function
       A.Int -> i32_t
+    | A.String -> str_t
     | A.Void -> void_t in
 
   (* Declare each global variable; remember its value in a map *)
@@ -59,8 +61,10 @@ let translate (globals, functions) =
     let (the_function, _) = StringMap.find fdecl.A.fname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
-    let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
-    
+    let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder 
+    and float_format_str = L.build_global_stringptr "%f\t" "fmt" builder
+    and string_format_str = L.build_global_stringptr "%s\n" "fmt" builder
+    in 
     (* Construct the function's "locals": formal arguments and locally
        declared variables.  Allocate each on the stack, initialize their
        value, if appropriate, and remember their values in the "locals" map *)
@@ -86,6 +90,7 @@ let translate (globals, functions) =
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
 	A.Int_Lit i -> L.const_int i32_t i
+      | A.String_Lit str -> L.build_global_stringptr str "tmp" builder
       | A.Noexpr -> L.const_int i32_t 0
       | A.Id s -> L.build_load (lookup s) s builder
       | A.Binop (e1, op, e2) ->
@@ -115,6 +120,8 @@ let translate (globals, functions) =
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
 	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
 	    "printf" builder
+      | A.Call("prints", [e]) -> 
+      L.build_call printf_func [| string_format_str ; (expr builder e) |] "printf" builder
       | A.Call ("printbig", [e]) ->
 	  L.build_call printbig_func [| (expr builder e) |] "printbig" builder
       | A.Call (f, act) ->
@@ -135,11 +142,11 @@ let translate (globals, functions) =
     (* Build the code for the given statement; return the builder for
        the statement's successor *)
     let rec stmt builder = function
-	A.Block sl -> List.fold_left stmt builder sl
+	   A.Block sl -> List.fold_left stmt builder sl
       | A.Expr e -> ignore (expr builder e); builder
       | A.Return e -> ignore (match fdecl.A.typ with
 	  A.Void -> L.build_ret_void builder
-	| _ -> L.build_ret (expr builder e) builder); builder
+	   | _ -> L.build_ret (expr builder e) builder); builder
       | A.If (predicate, then_stmt, else_stmt) ->
          let bool_val = expr builder predicate in
 	 let merge_bb = L.append_block context "merge" the_function in
