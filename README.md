@@ -1,7 +1,6 @@
 # DCL
 
-CircleCI: 
-[![CircleCI](https://circleci.com/gh/PLT-DCL/dcl.svg?style=svg)](https://circleci.com/gh/PLT-DCL/dcl)
+[![CircleCI](https://circleci.com/gh/PLT-DCL/dcl.svg?style=shield)](https://circleci.com/gh/PLT-DCL/dcl)
 
 This is the home for DCL - a new callback-based programming language.
 
