@@ -95,15 +95,16 @@ let check (globals, functions) =
 
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
-	     Int_Lit _-> Int
-       | String_Lit _-> String 
+	     Int_Lit _ -> Int
+	   | Bool_Lit _ -> Bool
+       | String_Lit _ -> String 
       | Id s -> type_of_identifier s
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
 	(match op with
           Add | Sub | Mult | Div when t1 = Int && t2 = Int -> Int
-	| Equal | Neq when t1 = t2 -> Int
-	| Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Int
-	| And | Or when t1 = Int && t2 = Int -> Int
+	| Equal | Neq when t1 = t2 -> Bool
+	| Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Bool
+	| And | Or when t1 = Bool && t2 = Bool -> Bool
         | _ -> raise (Failure ("illegal binary operator " ^
               string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
               string_of_typ t2 ^ " in " ^ string_of_expr e))
@@ -111,8 +112,8 @@ let check (globals, functions) =
       | Unop(op, e) as ex -> let t = expr e in
 	 (match op with
 	   Neg when t = Int -> Int
-	 | Not when t = Int -> Int
-         | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
+	 | Not when t = Bool -> Bool
+     | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
 	  		   string_of_typ t ^ " in " ^ string_of_expr ex)))
       | Noexpr -> Void
       | Assign(var, e) as ex -> let lt = type_of_identifier var
@@ -133,8 +134,8 @@ let check (globals, functions) =
            fd.typ
     in
 
-    let check_int_expr e = if expr e != Int
-     then raise (Failure ("expected Int expression in " ^ string_of_expr e))
+    let check_bool_expr e = if expr e != Bool
+     then raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
      else () in
 
     (* Verify a statement or throw an exception *)
@@ -151,10 +152,10 @@ let check (globals, functions) =
          raise (Failure ("return gives " ^ string_of_typ t ^ " expected " ^
                          string_of_typ func.typ ^ " in " ^ string_of_expr e))
            
-      | If(p, b1, b2) -> check_int_expr p; stmt b1; stmt b2
-      | For(e1, e2, e3, st) -> ignore (expr e1); check_int_expr e2;
+      | If(p, b1, b2) -> check_bool_expr p; stmt b1; stmt b2
+      | For(e1, e2, e3, st) -> ignore (expr e1); check_bool_expr e2;
                                ignore (expr e3); stmt st
-      | While(p, s) -> check_int_expr p; stmt s
+      | While(p, s) -> check_bool_expr p; stmt s
     in
 
     stmt (Block func.body)

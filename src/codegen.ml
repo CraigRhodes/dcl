@@ -28,6 +28,7 @@ let translate (globals, functions) =
 
   let ltype_of_typ = function
       A.Int -> i32_t
+    | A.Bool -> i1_t
     | A.String -> str_t
     | A.Void -> void_t in
 
@@ -90,6 +91,7 @@ let translate (globals, functions) =
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
 	A.Int_Lit i -> L.const_int i32_t i
+      | A.Bool_Lit b -> L.const_int i1_t (if b then 1 else 0)
       | A.String_Lit str -> L.build_global_stringptr str "tmp" builder
       | A.Noexpr -> L.const_int i32_t 0
       | A.Id s -> L.build_load (lookup s) s builder

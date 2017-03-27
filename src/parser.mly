@@ -1,15 +1,15 @@
 /*DCL Parser based off of MicroC */
 %{ open Ast %}
 
-%token INT FLOAT CHAR VOID NULL STRING
+%token INT BOOL FLOAT CHAR VOID NULL STRING
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE  
-%token <int> INT_LITERAL
+%token<int> INT_LITERAL
 %token<float> FLOAT_LITERAL 
 %token<string> STRING_LITERAL
-%token <string> ID
+%token<string> ID
 %token<char> CHAR_LITERAL
 %token EOF
 
@@ -55,6 +55,7 @@ formal_list:
 
 typ:
     INT { Int }
+  | BOOL { Bool }
   | VOID { Void }
   | STRING {String}
 
@@ -85,11 +86,13 @@ expr_opt:
   | expr          { $1 }
 
 expr:
-  INT_LITERAL   {Int_Lit($1)} 
-  | FLOAT_LITERAL {Float_Lit($1)} 
-  | STRING_LITERAL {String_Lit($1)}
-  |CHAR_LITERAL {Char_Lit($1)}
-  |ID             { Id($1) } 
+    INT_LITERAL   { Int_Lit($1) } 
+  | TRUE  { Bool_Lit(true) }
+  | FALSE { Bool_Lit(false) }
+  | FLOAT_LITERAL { Float_Lit($1) } 
+  | STRING_LITERAL { String_Lit($1) }
+  | CHAR_LITERAL { Char_Lit($1) }
+  | ID             { Id($1) } 
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
   | expr TIMES  expr { Binop($1, Mult,  $3) }
