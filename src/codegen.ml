@@ -22,11 +22,12 @@ let translate (globals, functions) =
   let the_module = L.create_module context "MicroC"
   and i32_t  = L.i32_type  context
   and i8_t   = L.i8_type   context
-  and i1_t   = L.i1_type   context
+  and f128_t = L.fp128_type context
   and void_t = L.void_type context in
 
   let ltype_of_typ = function
       A.Int -> i32_t
+    | A.Double -> f128_t
     | A.Void -> void_t in
 
   (* Declare each global variable; remember its value in a map *)
@@ -85,30 +86,31 @@ let translate (globals, functions) =
 
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
-	A.IntLiteral i -> L.const_int i32_t i
+	      A.IntLiteral i -> L.const_int i32_t i
+      | A.DblLiteral d -> L.const_float f128_t d
       | A.Noexpr -> L.const_int i32_t 0
       | A.Id s -> L.build_load (lookup s) s builder
       | A.Binop (e1, op, e2) ->
 	  let e1' = expr builder e1
 	  and e2' = expr builder e2 in
 	  (match op with
-	    A.Add     -> L.build_add
-	  | A.Sub     -> L.build_sub
-	  | A.Mult    -> L.build_mul
-          | A.Div     -> L.build_sdiv
-	  | A.And     -> L.build_and
-	  | A.Or      -> L.build_or
-	  | A.Equal   -> L.build_icmp L.Icmp.Eq
-	  | A.Neq     -> L.build_icmp L.Icmp.Ne
-	  | A.Less    -> L.build_icmp L.Icmp.Slt
-	  | A.Leq     -> L.build_icmp L.Icmp.Sle
-	  | A.Greater -> L.build_icmp L.Icmp.Sgt
-	  | A.Geq     -> L.build_icmp L.Icmp.Sge
+	    A.Add       -> if L.type_of e1' == i32_t then L.build_add else L.build_fadd
+	  | A.Sub       -> if L.type_of e1' == i32_t then L.build_sub else L.build_fsub
+	  | A.Mult      -> if L.type_of e1' == i32_t then L.build_mul else L.build_fmul
+    | A.Div       -> if L.type_of e1' == i32_t then L.build_sdiv else L.build_fdiv
+	  | A.And       -> L.build_and
+	  | A.Or        -> L.build_or
+	  | A.Equal     -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Eq else L.build_fcmp L.Fcmp.Oeq
+    | A.Neq       -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Ne else L.build_fcmp L.Fcmp.One
+    | A.Less      -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Slt else L.build_fcmp L.Fcmp.Olt
+    | A.Leq       -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Sle else L.build_fcmp L.Fcmp.Ole
+    | A.Greater   -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Sgt else L.build_fcmp L.Fcmp.Ogt
+    | A.Geq       -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Sge else L.build_fcmp L.Fcmp.Oge
 	  ) e1' e2' "tmp" builder
       | A.Unop(op, e) ->
 	  let e' = expr builder e in
 	  (match op with
-	    A.Neg     -> L.build_neg
+	          A.Neg     -> if L.type_of e' == i32_t then L.build_neg else L.build_fneg
           | A.Not     -> L.build_not) e' "tmp" builder
       | A.Assign (s, e) -> let e' = expr builder e in
 	                   ignore (L.build_store e' (lookup s) builder); e'

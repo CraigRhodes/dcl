@@ -92,13 +92,19 @@ let check (globals, functions) =
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
 	IntLiteral _ -> Int
+      | DblLiteral _ -> Double
       | Id s -> type_of_identifier s
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
 	(match op with
-          Add | Sub | Mult | Div when t1 = Int && t2 = Int -> Int
-	| Equal | Neq when t1 = t2 -> Int
-	| Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Int
-	| And | Or when t1 = Int && t2 = Int -> Int
+        Equal | Neq when t1 = t2 -> Int
+
+        |  Add | Sub | Mult | Div when t1 = Int && t2 = Int -> Int
+	      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Int
+	      | And | Or when t1 = Int && t2 = Int -> Int
+
+        | Add | Sub | Mult | Div when t1 = Double && t2 = Double -> Double
+        | Less | Leq | Greater | Geq when t1 = Double && t2 = Double -> Int
+
         | _ -> raise (Failure ("illegal binary operator " ^
               string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
               string_of_typ t2 ^ " in " ^ string_of_expr e))
@@ -107,6 +113,9 @@ let check (globals, functions) =
 	 (match op with
 	   Neg when t = Int -> Int
 	 | Not when t = Int -> Int
+
+   | Neg when t = Double -> Double
+
          | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
 	  		   string_of_typ t ^ " in " ^ string_of_expr ex)))
       | Noexpr -> Void
