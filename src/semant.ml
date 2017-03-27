@@ -40,19 +40,27 @@ let check (globals, functions) =
 
   (**** Checking Functions ****)
 
-  if List.mem "print" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function print may not be defined")) else ();
+  if List.mem "print_int" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function print_int may not be defined")) else ();
+
+
+  if List.mem "print_double" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function print_double may not be defined")) else ();
 
   report_duplicate (fun n -> "duplicate function " ^ n)
     (List.map (fun fd -> fd.fname) functions);
 
   (* Function declaration for a named function *)
-  let built_in_decls =  StringMap.add "print"
-     { typ = Void; fname = "print"; formals = [(Int, "x")];
+  let built_in_decls =  
+     StringMap.add "print_double" 
+     { typ = Void; fname = "print"; formals = [(Double, "x")];
        locals = []; body = [] }
-     (StringMap.singleton "printbig"
-     { typ = Void; fname = "printbig"; formals = [(Int, "x")];
-       locals = []; body = [] })
+     (StringMap.add "print_int" 
+      { typ = Void; fname = "print"; formals = [(Int, "x")];
+        locals = []; body = [] }
+       (StringMap.singleton "printbig"
+       { typ = Void; fname = "printbig"; formals = [(Int, "x")];
+         locals = []; body = [] }))
    in
      
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
@@ -60,7 +68,8 @@ let check (globals, functions) =
   in
 
   let function_decl s = try StringMap.find s function_decls
-       with Not_found -> raise (Failure ("unrecognized function " ^ s))
+       with 
+       Not_found -> (let _ = print_string s in raise (Failure ("unrecognized function " ^ s)))
   in
 
   let _ = function_decl "main" in (* Ensure "main" is defined *)

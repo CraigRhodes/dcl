@@ -22,18 +22,18 @@ let translate (globals, functions) =
   let the_module = L.create_module context "MicroC"
   and i32_t  = L.i32_type  context
   and i8_t   = L.i8_type   context
-  and f128_t = L.fp128_type context
+  and f64_t = L.double_type context
   and void_t = L.void_type context in
 
   let ltype_of_typ = function
       A.Int -> i32_t
-    | A.Double -> f128_t
+    | A.Double -> f64_t
     | A.Void -> void_t in
 
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
     let global_var m (t, n) =
-      let init = L.const_int (ltype_of_typ t) 0
+      let init = if t == A.Int then L.const_int (ltype_of_typ t) 0 else L.const_float (ltype_of_typ t) 0. 
       in StringMap.add n (L.define_global n init the_module) m in
     List.fold_left global_var StringMap.empty globals in
 
@@ -61,6 +61,7 @@ let translate (globals, functions) =
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
+    let dbl_format_str = L.build_global_stringptr "%f\n" "fmt" builder in
     
     (* Construct the function's "locals": formal arguments and locally
        declared variables.  Allocate each on the stack, initialize their
@@ -87,38 +88,36 @@ let translate (globals, functions) =
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
 	      A.IntLiteral i -> L.const_int i32_t i
-      | A.DblLiteral d -> L.const_float f128_t d
+      | A.DblLiteral d -> L.const_float f64_t d
       | A.Noexpr -> L.const_int i32_t 0
       | A.Id s -> L.build_load (lookup s) s builder
       | A.Binop (e1, op, e2) ->
 	  let e1' = expr builder e1
 	  and e2' = expr builder e2 in
 	  (match op with
-	    A.Add       -> if L.type_of e1' == i32_t then L.build_add else L.build_fadd
-	  | A.Sub       -> if L.type_of e1' == i32_t then L.build_sub else L.build_fsub
-	  | A.Mult      -> if L.type_of e1' == i32_t then L.build_mul else L.build_fmul
-    | A.Div       -> if L.type_of e1' == i32_t then L.build_sdiv else L.build_fdiv
+	    A.Add       -> if L.type_of e1' == ltype_of_typ A.Int then L.build_add else L.build_fadd
+	  | A.Sub       -> if L.type_of e1' == ltype_of_typ A.Int then L.build_sub else L.build_fsub
+	  | A.Mult      -> if L.type_of e1' == ltype_of_typ A.Int then L.build_mul else L.build_fmul
+    | A.Div       -> if L.type_of e1' == ltype_of_typ A.Int then L.build_sdiv else L.build_fdiv
 	  | A.And       -> L.build_and
 	  | A.Or        -> L.build_or
-	  | A.Equal     -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Eq else L.build_fcmp L.Fcmp.Oeq
-    | A.Neq       -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Ne else L.build_fcmp L.Fcmp.One
-    | A.Less      -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Slt else L.build_fcmp L.Fcmp.Olt
-    | A.Leq       -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Sle else L.build_fcmp L.Fcmp.Ole
-    | A.Greater   -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Sgt else L.build_fcmp L.Fcmp.Ogt
-    | A.Geq       -> if L.type_of e1' == i32_t then L.build_icmp L.Icmp.Sge else L.build_fcmp L.Fcmp.Oge
+	  | A.Equal     -> if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Eq else L.build_fcmp L.Fcmp.Oeq
+    | A.Neq       -> if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Ne else L.build_fcmp L.Fcmp.One
+    | A.Less      -> if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Slt else L.build_fcmp L.Fcmp.Olt
+    | A.Leq       -> if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Sle else L.build_fcmp L.Fcmp.Ole
+    | A.Greater   -> if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Sgt else L.build_fcmp L.Fcmp.Ogt
+    | A.Geq       -> if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Sge else L.build_fcmp L.Fcmp.Oge
 	  ) e1' e2' "tmp" builder
       | A.Unop(op, e) ->
 	  let e' = expr builder e in
 	  (match op with
-	          A.Neg     -> if L.type_of e' == i32_t then L.build_neg else L.build_fneg
+	          A.Neg     -> if L.type_of e' == ltype_of_typ A.Int then L.build_neg else L.build_fneg
           | A.Not     -> L.build_not) e' "tmp" builder
       | A.Assign (s, e) -> let e' = expr builder e in
 	                   ignore (L.build_store e' (lookup s) builder); e'
-      | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
-	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
-	    "printf" builder
-      | A.Call ("printbig", [e]) ->
-	  L.build_call printbig_func [| (expr builder e) |] "printbig" builder
+      | A.Call ("print_int", [e]) -> L.build_call printf_func [| int_format_str ; expr builder e |] "printf" builder
+      | A.Call ("print_double", [e]) -> L.build_call printf_func [| dbl_format_str ; expr builder e |] "printf" builder
+      | A.Call ("printbig", [e]) -> L.build_call printbig_func [| (expr builder e) |] "printbig" builder
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let actuals = List.rev (List.map (expr builder) (List.rev act)) in
