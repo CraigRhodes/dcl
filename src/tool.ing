@@ -1,0 +1,3 @@
+llc < float.ll > float.s
+cc -o float float.s printbig.o exp.o -lm
+./float

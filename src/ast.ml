@@ -1,17 +1,18 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-          And | Or
+          And | Or  | Exp
 
 type uop = Neg | Not
 
-type typ = Int | Void | Double
+type typ = Int | Void | Double | String
 
 type bind = typ * string
 
 type expr =
     IntLiteral of int
   | DblLiteral of float
+  | StrLiteral of string
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -44,6 +45,7 @@ let string_of_op = function
   | Sub -> "-"
   | Mult -> "*"
   | Div -> "/"
+  | Exp -> "^"
   | Equal -> "=="
   | Neq -> "!="
   | Less -> "<"
@@ -60,6 +62,7 @@ let string_of_uop = function
 let rec string_of_expr = function
     IntLiteral(l) -> string_of_int l
   | DblLiteral(l) -> string_of_float l
+  | StrLiteral(l) -> l
   | Id(s) -> s
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
@@ -85,6 +88,7 @@ let rec string_of_stmt = function
 let string_of_typ = function
     Int -> "int"
   | Double -> "double"
+  | String -> "string"
   | Void -> "void"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"

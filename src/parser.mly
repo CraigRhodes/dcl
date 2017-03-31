@@ -5,11 +5,12 @@ open Ast
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
-%token PLUS MINUS TIMES DIVIDE ASSIGN NOT
+%token PLUS MINUS TIMES DIVIDE EXPONT ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT VOID DOUBLE
+%token RETURN IF ELSE FOR WHILE INT VOID DOUBLE STRING
 %token <int> INTLITERAL
 %token <float> DBLLITERAL
+%token <string> STRLITERAL
 %token <string> ID
 %token EOF
 
@@ -22,6 +23,7 @@ open Ast
 %left LT GT LEQ GEQ
 %left PLUS MINUS
 %left TIMES DIVIDE
+%right EXPONT
 %right NOT NEG
 
 %start program
@@ -56,6 +58,7 @@ formal_list:
 typ:
     INT { Int }
   | DOUBLE { Double }
+  | STRING { String }
   | VOID { Void }
 
 vdecl_list:
@@ -87,11 +90,13 @@ expr_opt:
 expr:
     INTLITERAL       { IntLiteral($1) }
   | DBLLITERAL       { DblLiteral($1) }
+  | STRLITERAL       { StrLiteral($1) }
   | ID               { Id($1) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
   | expr TIMES  expr { Binop($1, Mult,  $3) }
   | expr DIVIDE expr { Binop($1, Div,   $3) }
+  | expr EXPONT expr { Binop($1, Exp,   $3) }
   | expr EQ     expr { Binop($1, Equal, $3) }
   | expr NEQ    expr { Binop($1, Neq,   $3) }
   | expr LT     expr { Binop($1, Less,  $3) }

@@ -47,20 +47,33 @@ let check (globals, functions) =
   if List.mem "print_double" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function print_double may not be defined")) else ();
 
+  if List.mem "print_string" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function print_double may not be defined")) else ();
+
+  if List.mem "printbig" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function printbig may not be defined")) else ();
+
+
+  if List.mem "exp_int" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function exp_int may not be defined")) else ();
+
+  if List.mem "exp_dbl" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function exp_dbl may not be defined")) else ();
+
   report_duplicate (fun n -> "duplicate function " ^ n)
     (List.map (fun fd -> fd.fname) functions);
 
   (* Function declaration for a named function *)
   let built_in_decls =  
-     StringMap.add "print_double" 
-     { typ = Void; fname = "print"; formals = [(Double, "x")];
-       locals = []; body = [] }
-     (StringMap.add "print_int" 
-      { typ = Void; fname = "print"; formals = [(Int, "x")];
-        locals = []; body = [] }
-       (StringMap.singleton "printbig"
-       { typ = Void; fname = "printbig"; formals = [(Int, "x")];
-         locals = []; body = [] }))
+      (StringMap.add "print_double" 
+       { typ = Void; fname = "print"; formals = [(Double, "x")];
+         locals = []; body = [] }
+       (StringMap.add "print_int" 
+        { typ = Void; fname = "print"; formals = [(Int, "x")];
+          locals = []; body = [] }
+        (StringMap.singleton "print_string"
+         { typ = String; fname = "print_string"; formals = [(String, "x")];
+           locals = []; body = [] })))
    in
      
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
@@ -102,6 +115,7 @@ let check (globals, functions) =
     let rec expr = function
 	IntLiteral _ -> Int
       | DblLiteral _ -> Double
+      | StrLiteral _ -> String
       | Id s -> type_of_identifier s
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
 	(match op with
@@ -109,11 +123,16 @@ let check (globals, functions) =
 
         |  Add | Sub | Mult | Div when t1 = Int && t2 = Int -> Int
 	      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Int
-	      | And | Or when t1 = Int && t2 = Int -> Int
+	      | And  | Or when t1 = Int && t2 = Int -> Int
+        | Exp when t1 = Int && t2 = Int -> Double
 
-        | Add | Sub | Mult | Div when t1 = Double && t2 = Double -> Double
-        | Less | Leq | Greater | Geq when t1 = Double && t2 = Double -> Int
+        | Add | Sub | Mult | Div | Exp when t1 = Double && t2 = Double -> Double
+        | Less | Leq | Greater | Geq 
+        when t1 = Double && t2 = Double -> Int
 
+        (* | Add when t1 = String && t2 = String -> String *)
+        (* | Less | Leq | Greater | Geq when t1 = String && t2 = String -> Int *)
+        
         | _ -> raise (Failure ("illegal binary operator " ^
               string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
               string_of_typ t2 ^ " in " ^ string_of_expr e))

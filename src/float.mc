@@ -1,9 +1,6 @@
 int main()
 {
-  double a;
-  double b;
-  a = 42.;
-  b = a * a;
-  print_double(b);
+  print_double(42.0);
+  print_string('Hi Alix!\n\tWhat the fuck HI!\"');
   return 0;
 }
