@@ -3,7 +3,7 @@
 default: docker 
 
 docker:
-	docker run --rm --name DCL -v "`pwd`/../src:/home/dcl-user/dcl" -it craigrhodes/dcl 
+	docker run --rm  -v "`pwd`/../src:/home/dcl-user/dcl" -it craigrhodes/dcl 
 
 commit:
 	docker commit DCL craigrhodes/dcl
