@@ -2,6 +2,8 @@ int main() {
 int a;
 int b;
 int c;
+string h;
+print_string('hello world from the top');
 a = 5;
 if(a == 4) 
 {
