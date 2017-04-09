@@ -49,6 +49,8 @@ let translate (globals, functions) =
   let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func = L.declare_function "printf" printf_t the_module in
 
+  let strcmp_t = L.function_type i32_t [| L.pointer_type i8_t ; L.pointer_type i8_t |] in
+  let strcmp_func = L.declare_function "strcmp" strcmp_t the_module in
 
   let addstr_t = L.function_type (L.pointer_type i8_t) [| L.pointer_type i8_t ; L.pointer_type i8_t |] in
   let addstr_func = L.declare_function "add_str" addstr_t the_module in
@@ -127,14 +129,6 @@ let translate (globals, functions) =
       A.Add       -> if      L.type_of e1' == ltype_of_typ A.Int    then L.build_add  e1' e2' "tmp" builder
                      else if L.type_of e1' == ltype_of_typ A.Double then L.build_fadd e1' e2' "tmp" builder
                      else                                                L.build_call addstr_func [| e1' ; e2' |] "tmp" builder
-                       (*let (first, second) = build_string_from_code e1' in
-                       let (third, fourth) = build_string_from_code e2' in
-                       let result = L.build_call addstr_func [| first ; third |] "tmp" builder in
-                       let _ = print_string (L.string_of_lltype (L.type_of result)) in
-                       let _ = print_string (L.string_of_lltype (L.type_of e1')) in
-                       (*let _ = clean_up_string_stuff second in
-                       clean_up_string_stuff fourth       *)          
-                       e1'                           *)
     | A.Sub       -> (if L.type_of e1' == ltype_of_typ A.Int then L.build_sub else L.build_fsub) e1' e2' "tmp" builder
     | A.Mult      -> (if L.type_of e1' == ltype_of_typ A.Int then L.build_mul else L.build_fmul) e1' e2' "tmp" builder
     | A.Div       -> (if L.type_of e1' == ltype_of_typ A.Int then L.build_sdiv else L.build_fdiv) e1' e2' "tmp" builder
@@ -143,12 +137,36 @@ let translate (globals, functions) =
                      else L.build_call expdbl_func [| e1' ; e2' |] "tmp" builder
     | A.And       -> L.build_and e1' e2' "tmp" builder
     | A.Or        -> L.build_or e1' e2' "tmp" builder
-    | A.Equal     -> (if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Eq else L.build_fcmp L.Fcmp.Oeq) e1' e2' "tmp" builder
-    | A.Neq       -> (if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Ne else L.build_fcmp L.Fcmp.One) e1' e2' "tmp" builder
-    | A.Less      -> (if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Slt else L.build_fcmp L.Fcmp.Olt) e1' e2' "tmp" builder
-    | A.Leq       -> (if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Sle else L.build_fcmp L.Fcmp.Ole) e1' e2' "tmp" builder
-    | A.Greater   -> (if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Sgt else L.build_fcmp L.Fcmp.Ogt) e1' e2' "tmp" builder
-    | A.Geq       -> (if L.type_of e1' == ltype_of_typ A.Int then L.build_icmp L.Icmp.Sge else L.build_fcmp L.Fcmp.Oge) e1' e2' "tmp" builder
+    | A.Equal     -> if      L.type_of e1' == ltype_of_typ A.Int    then L.build_icmp L.Icmp.Eq e1' e2' "tmp" builder
+                     else if L.type_of e1' == ltype_of_typ A.Double then L.build_fcmp L.Fcmp.Oeq e1' e2' "tmp" builder
+                     else 
+                       let result = L.build_call strcmp_func [| e1' ; e2' |] "tmp" builder in
+                       L.build_icmp L.Icmp.Eq result (L.const_int i32_t 0) "tmp" builder
+    | A.Neq       -> if      L.type_of e1' == ltype_of_typ A.Int    then L.build_icmp L.Icmp.Ne e1' e2' "tmp" builder
+                     else if L.type_of e1' == ltype_of_typ A.Double then L.build_fcmp L.Fcmp.One e1' e2' "tmp" builder
+                     else 
+                       let result = L.build_call strcmp_func [| e1' ; e2' |] "tmp" builder in
+                       L.build_icmp L.Icmp.Ne result (L.const_int i32_t 0) "tmp" builder
+    | A.Less      -> if      L.type_of e1' == ltype_of_typ A.Int    then    L.build_icmp L.Icmp.Slt e1' e2' "tmp" builder
+                     else if L.type_of e1' == ltype_of_typ A.Double then L.build_fcmp L.Fcmp.Olt e1' e2' "tmp" builder
+                     else 
+                       let result = L.build_call strcmp_func [| e1' ; e2' |] "tmp" builder in
+                       L.build_icmp L.Icmp.Slt result (L.const_int i32_t 0) "tmp" builder
+    | A.Leq       -> if      L.type_of e1' == ltype_of_typ A.Int    then L.build_icmp L.Icmp.Sle e1' e2' "tmp" builder
+                     else if L.type_of e1' == ltype_of_typ A.Double then L.build_fcmp L.Fcmp.Ole e1' e2' "tmp" builder
+                     else 
+                       let result = L.build_call strcmp_func [| e1' ; e2' |] "tmp" builder in
+                       L.build_icmp L.Icmp.Sle result (L.const_int i32_t 0) "tmp" builder
+    | A.Greater   -> if      L.type_of e1' == ltype_of_typ A.Int    then L.build_icmp L.Icmp.Sgt e1' e2' "tmp" builder
+                     else if L.type_of e1' == ltype_of_typ A.Double then L.build_fcmp L.Fcmp.Ogt e1' e2' "tmp" builder
+                     else 
+                       let result = L.build_call strcmp_func [| e1' ; e2' |] "tmp" builder in
+                       L.build_icmp L.Icmp.Sgt result (L.const_int i32_t 0) "tmp" builder
+    | A.Geq       -> if      L.type_of e1' == ltype_of_typ A.Int    then L.build_icmp L.Icmp.Sge e1' e2' "tmp" builder
+                     else if L.type_of e1' == ltype_of_typ A.Double then L.build_fcmp L.Fcmp.Oge e1' e2' "tmp" builder
+                     else 
+                       let result = L.build_call strcmp_func [| e1' ; e2' |] "tmp" builder in
+                       L.build_icmp L.Icmp.Sge result (L.const_int i32_t 0) "tmp" builder
     )
       | A.Unop(op, e) ->
     let e' = expr builder e in

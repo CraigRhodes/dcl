@@ -134,7 +134,7 @@ let check (globals, functions) =
         when t1 = Double && t2 = Double -> Int
 
         | Add when t1 = String && t2 = String -> String 
-        (* | Less | Leq | Greater | Geq when t1 = String && t2 = String -> Int *)
+        | Less | Leq | Greater | Geq when t1 = String && t2 = String -> Int
         
         | _ -> raise (Failure ("illegal binary operator " ^
               string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
