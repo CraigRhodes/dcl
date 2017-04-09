@@ -4,18 +4,18 @@
 
 # Easiest way to build: using ocamlbuild, which in turn uses ocamlfind
 
-all : microc.native printbig.o exp.o strops.o
+all : dcl.native printbig.o exp.o strops.o
 
-microc.native :
+dcl.native :
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 \
-		microc.native
+		dcl.native
 
 # "make clean" removes all generated files
 
 .PHONY : clean
 clean :
 	ocamlbuild -clean
-	rm -rf testall.log *.diff microc scanner.ml parser.ml parser.mli
+	rm -rf testall.log *.diff dcl scanner.ml parser.ml parser.mli
 	rm -rf printbig
 	rm -rf exp
 	rm -rf strops
@@ -23,10 +23,10 @@ clean :
 
 # More detailed: build using ocamlc/ocamlopt + ocamlfind to locate LLVM
 
-OBJS = ast.cmx codegen.cmx parser.cmx scanner.cmx semant.cmx microc.cmx
+OBJS = ast.cmx codegen.cmx parser.cmx scanner.cmx semant.cmx dcl.cmx
 
-microc : $(OBJS)
-	ocamlfind ocamlopt -linkpkg -package llvm -package llvm.analysis $(OBJS) -o microc
+dcl : $(OBJS)
+	ocamlfind ocamlopt -linkpkg -package llvm -package llvm.analysis $(OBJS) -o dcl
 
 scanner.ml : scanner.mll
 	ocamllex scanner.mll
@@ -59,8 +59,8 @@ ast.cmo :
 ast.cmx :
 codegen.cmo : ast.cmo
 codegen.cmx : ast.cmx
-microc.cmo : semant.cmo scanner.cmo parser.cmi codegen.cmo ast.cmo
-microc.cmx : semant.cmx scanner.cmx parser.cmx codegen.cmx ast.cmx
+dcl.cmo : semant.cmo scanner.cmo parser.cmi codegen.cmo ast.cmo
+dcl.cmx : semant.cmx scanner.cmx parser.cmx codegen.cmx ast.cmx
 parser.cmo : ast.cmo parser.cmi
 parser.cmx : ast.cmx parser.cmi
 scanner.cmo : parser.cmi
@@ -84,10 +84,10 @@ FAILS = assign1 assign2 assign3 dead1 dead2 expr1 expr2 for1 for2	\
 TESTFILES = $(TESTS:%=test-%.mc) $(TESTS:%=test-%.out) \
 	    $(FAILS:%=fail-%.mc) $(FAILS:%=fail-%.err)
 
-TARFILES = ast.ml codegen.ml Makefile microc.ml parser.mly README scanner.mll \
+TARFILES = ast.ml codegen.ml Makefile dcl.ml parser.mly README scanner.mll \
 	semant.ml testall.sh $(TESTFILES:%=tests/%) printbig.c arcade-font.pbm \
 	font2c exp.c 
 
-microc-llvm.tar.gz : $(TARFILES)
-	cd .. && tar czf microc-llvm/microc-llvm.tar.gz \
-		$(TARFILES:%=microc-llvm/%)
+dcl-llvm.tar.gz : $(TARFILES)
+	cd .. && tar czf dcl-llvm/dcl-llvm.tar.gz \
+		$(TARFILES:%=dcl-llvm/%)
