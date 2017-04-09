@@ -3,10 +3,10 @@
 # eval `opam config env`
 
 # Easiest way to build: using ocamlbuild, which in turn uses ocamlfind
+.PHONY : all
+all : clean dcl.native printbig.o exp.o strops.o
 
-all : dcl.native printbig.o exp.o strops.o
-
-dcl.native :
+dcl.native : 
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 \
 		dcl.native
 
@@ -25,7 +25,7 @@ clean :
 
 OBJS = ast.cmx codegen.cmx parser.cmx scanner.cmx semant.cmx dcl.cmx
 
-dcl : $(OBJS)
+dcl : $(OBJS) 
 	ocamlfind ocamlopt -linkpkg -package llvm -package llvm.analysis $(OBJS) -o dcl
 
 scanner.ml : scanner.mll
