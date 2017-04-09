@@ -60,6 +60,9 @@ let check (globals, functions) =
   if List.mem "exp_dbl" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function exp_dbl may not be defined")) else ();
 
+  if List.mem "add_str" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function add_str may not be defined")) else ();
+
   report_duplicate (fun n -> "duplicate function " ^ n)
     (List.map (fun fd -> fd.fname) functions);
 
@@ -130,7 +133,7 @@ let check (globals, functions) =
         | Less | Leq | Greater | Geq 
         when t1 = Double && t2 = Double -> Int
 
-        (* | Add when t1 = String && t2 = String -> String *)
+        | Add when t1 = String && t2 = String -> String 
         (* | Less | Leq | Greater | Geq when t1 = String && t2 = String -> Int *)
         
         | _ -> raise (Failure ("illegal binary operator " ^
