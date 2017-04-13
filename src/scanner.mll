@@ -53,6 +53,10 @@ rule token = parse
 | "int"    { INT }
 | "double" { DOUBLE }
 | "void"   { VOID }
+| "string"  { STRING }
+| "bool"    { BOOL }
+| "true"   { TRUE }
+| "false"  { FALSE }
 | ['0'-'9']+ as lxm { INTLITERAL(int_of_string lxm) }
 | float_rule as lxm { DBLLITERAL(float_of_string lxm) }
 | string_rule as lxm { STRLITERAL(let rec int_range = function

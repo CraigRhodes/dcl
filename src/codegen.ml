@@ -120,7 +120,7 @@ let translate (globals, functions) =
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
         A.IntLiteral i -> L.const_int i32_t i
-      | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
+      | A.BoolLiteral b -> L.const_int i1_t (if b then 1 else 0)
       | A.DblLiteral d -> L.const_float f64_t d
       | A.StrLiteral s -> build_string_from_code (L.const_string context s)
       | A.Noexpr -> L.const_int i32_t 0

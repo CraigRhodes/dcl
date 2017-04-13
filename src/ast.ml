@@ -11,7 +11,7 @@ type bind = typ * string
 
 type expr =
     IntLiteral of int
-  | BoolLit of bool
+  | BoolLiteral of bool
   | DblLiteral of float
   | StrLiteral of string
   | Id of string
@@ -62,8 +62,8 @@ let string_of_uop = function
 
 let rec string_of_expr = function
     IntLiteral(l) -> string_of_int l
-  | BoolLit(true) -> "true"
-  | BoolLit(false) -> "false"
+  | BoolLiteral(true) -> "true"
+  | BoolLiteral(false) -> "false"
   | DblLiteral(l) -> string_of_float l
   | StrLiteral(l) -> l
   | Id(s) -> s
