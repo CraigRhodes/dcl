@@ -24,32 +24,49 @@ let string_rule = ('\'' | '\"')
 rule token = parse
   [' ' '\t' '\r' '\n'] { token lexbuf } (* Whitespace *)
 | "/*"     { comment lexbuf }           (* Comments *)
+
+(* Brackets and Punctuation *)
 | '('      { LPAREN }
 | ')'      { RPAREN }
 | '{'      { LBRACE }
 | '}'      { RBRACE }
 | ';'      { SEMI }
 | ','      { COMMA }
+| '['      { LSQUARE}
+| ']'      { RSQUARE }
+
+(* Mathematical Operators *)
 | '+'      { PLUS }
 | '-'      { MINUS }
 | '*'      { TIMES }
 | '/'      { DIVIDE }
 | '^'      { EXPONT }
 | '='      { ASSIGN }
+
+(*Equality Operators *)
 | "=="     { EQ }
 | "!="     { NEQ }
 | "<"      { LT }
 | "<="     { LEQ }
 | ">"      { GT }
 | ">="     { GEQ }
+
+(* Logical Operators *)
 | "&&"     { AND }
 | "||"     { OR }
 | "!"      { NOT }
+
+(* Conditional Operators *)
 | "if"     { IF }
 | "else"   { ELSE }
 | "for"    { FOR }
 | "while"  { WHILE }
+
+
+(* Keywords for functions *)
 | "return" { RETURN }
+
+(* Keywords for Data Types *)
 | "int"    { INT }
 | "double" { DOUBLE }
 | "void"   { VOID }
@@ -57,6 +74,7 @@ rule token = parse
 | "bool"    { BOOL }
 | "true"   { TRUE }
 | "false"  { FALSE }
+| "array"   { ARRAY }
 | ['0'-'9']+ as lxm { INTLITERAL(int_of_string lxm) }
 | float_rule as lxm { DBLLITERAL(float_of_string lxm) }
 | string_rule as lxm { STRLITERAL(let rec int_range = function
