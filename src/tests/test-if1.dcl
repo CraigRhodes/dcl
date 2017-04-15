@@ -1,6 +1,6 @@
 int main()
 {
-  if (true) print(42);
+  if (true) print_int(42);
   print_int(17);
   return 0;
 }
