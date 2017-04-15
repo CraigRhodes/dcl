@@ -5,6 +5,6 @@ int add(int x, int y)
 
 int main()
 {
-  print( add(17, 25) );
+  print_int( add(17, 25) );
   return 0;
 }
