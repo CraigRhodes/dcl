@@ -57,14 +57,6 @@ formal_list:
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
 
 
-primitive_literal_list:
-  /* nothing */     { [] }
-| primitive_lits    { List.rev $1 }
-
-
-primitive_lits:
-  primitive_literal   {[$1]}
-  | primitive_lits SEMI primitive_literal { $3 :: $1 }
 
 primitive_literal:
   Int_Literal      {Int_Literal($1)}
@@ -93,8 +85,6 @@ stmt_list:
 
 stmt:
     expr SEMI { Expr $1 }
-  | ARRAY typ ID ASSIGN array_type {Array($2, $3, $5 )}
-  | ARRAY typ ID ASSIGN ARRAY LPAREN INTLITERAL RPAREN (FixedArray($2, $3, $7))
   | RETURN SEMI { Return Noexpr }
   | RETURN expr SEMI { Return $2 }
   | LBRACE stmt_list RBRACE { Block(List.rev $2) }
