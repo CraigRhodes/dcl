@@ -49,7 +49,7 @@ let check (globals, functions) =
   then raise (Failure ("function print_double may not be defined")) else ();
 
   if List.mem "print_string" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function print_double may not be defined")) else ();
+  then raise (Failure ("function print_string may not be defined")) else ();
 
   if List.mem "printbig" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function printbig may not be defined")) else ();
@@ -139,7 +139,7 @@ let check (globals, functions) =
 
         |  Add | Sub | Mult | Div when t1 = Int && t2 = Int -> Int
         | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Bool
-        | And  | Or when t1 = Int && t2 = Bool -> Bool
+        | And  | Or when t1 = Bool && t2 = Bool -> Bool
         | Exp when t1 = Int && t2 = Int -> Double
 
         | Add | Sub | Mult | Div | Exp when t1 = Double && t2 = Double -> Double

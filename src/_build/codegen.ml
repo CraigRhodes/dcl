@@ -44,7 +44,8 @@ let translate (globals, functions) =
                     A.Int            -> L.const_int          (ltype_of_typ t) 0 
                   | A.Double         -> L.const_float        (ltype_of_typ t) 0.
                   | A.Bool           -> L.const_int          (ltype_of_typ t) 0
-                  | _ (* A.String *) -> L.const_pointer    (ltype_of_typ t) " ")
+                  | _ (* A.String *) -> L.const_string       context ""
+                )
       in StringMap.add n (L.define_global n init the_module) m in
     List.fold_left global_var StringMap.empty globals in
 
