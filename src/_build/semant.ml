@@ -139,7 +139,7 @@ let check (globals, functions) =
 
         |  Add | Sub | Mult | Div when t1 = Int && t2 = Int -> Int
         | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Bool
-        | And  | Or when t1 = Bool && t2 = Bool -> Bool
+        | And  | Or when t1 = Int && t2 = Bool -> Bool
         | Exp when t1 = Int && t2 = Int -> Double
 
         | Add | Sub | Mult | Div | Exp when t1 = Double && t2 = Double -> Double
