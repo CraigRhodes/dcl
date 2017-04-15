@@ -56,6 +56,25 @@ formal_list:
     typ ID                   { [($1,$2)] }
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
 
+array_type:
+  LSQUARE primitive_literal_list RSQUARE { $2 } 
+
+primitive_literal_list:
+  /* nothing */     { [] }
+| primitive_lits    { List.rev $1 }
+
+
+primitive_lits:
+  primitive_literal   {[$1]}
+  | primitive_lits SEMI primitive_literal { $3 :: $1 }
+
+primitive_literal:
+  Int_Literal      {Int_Literal($1)}
+| Double_Literal   {Double_Literal($1) }
+| String_Literal   {String_Literal($1)}
+| Bool_Literal     {Bool_Literal($1)}
+
+
 typ:
     INT { Int }
   | DOUBLE { Double }

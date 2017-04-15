@@ -9,6 +9,6 @@ int foo(int a, bool b)
 }
 
 int main() {
- print(foo(37, false));
+ print_int(foo(37, false));
  return 0;
 }
