@@ -32,8 +32,6 @@ rule token = parse
 | '}'      { RBRACE }
 | ';'      { SEMI }
 | ','      { COMMA }
-| '['      { LSQUARE}
-| ']'      { RSQUARE }
 
 (* Mathematical Operators *)
 | '+'      { PLUS }
