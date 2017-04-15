@@ -10,7 +10,7 @@ int cond(bool b)
 
 int main()
 {
- print_bool(cond(true));
- print_bool(cond(false));
+ print_int(cond(true));
+ print_int(cond(false));
  return 0;
 }
