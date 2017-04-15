@@ -4,10 +4,11 @@
 open Ast
 %}
 
+
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE EXPONT ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT VOID DOUBLE STRING
+%token RETURN IF ELSE FOR WHILE INT BOOL VOID DOUBLE STRING 
 %token <int> INTLITERAL
 %token <float> DBLLITERAL
 %token <string> STRLITERAL
@@ -55,11 +56,14 @@ formal_list:
     typ ID                   { [($1,$2)] }
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
 
+
+
 typ:
     INT { Int }
   | DOUBLE { Double }
   | STRING { String }
   | VOID { Void }
+  | BOOL { Bool }
 
 vdecl_list:
     /* nothing */    { [] }
@@ -91,6 +95,8 @@ expr:
     INTLITERAL       { IntLiteral($1) }
   | DBLLITERAL       { DblLiteral($1) }
   | STRLITERAL       { StrLiteral($1) }
+  | TRUE             {BoolLiteral(true)}
+  | FALSE            {BoolLiteral(false)}
   | ID               { Id($1) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }

@@ -10,6 +10,7 @@ Detailed documentation on the OCaml LLVM library:
 http://llvm.moe/
 http://llvm.moe/ocaml/
 
+This is for DCL.
 *)
 
 module L = Llvm
@@ -22,6 +23,7 @@ let translate (globals, functions) =
   let the_module = L.create_module context "DCL"
   and i32_t  = L.i32_type    context
   and i8_t   = L.i8_type     context
+  and i1_t   = L.i1_type     context
   and f64_t  = L.double_type context
   and void_t = L.void_type   context in
 
@@ -31,6 +33,7 @@ let translate (globals, functions) =
 
   let ltype_of_typ = function
       A.Int -> i32_t
+    | A.Bool -> i1_t
     | A.String -> L.pointer_type i8_t
     | A.Double -> f64_t
     | A.Void -> void_t in
@@ -41,7 +44,9 @@ let translate (globals, functions) =
       let init = (match t with 
                     A.Int            -> L.const_int          (ltype_of_typ t) 0 
                   | A.Double         -> L.const_float        (ltype_of_typ t) 0.
-                  | _ (* A.String *) -> L.const_pointer_null (L.element_type (ltype_of_typ t)))
+                  | A.Bool           -> L.const_int          (ltype_of_typ t) 0
+                  | _ (* A.String *) -> L.const_string       context ""
+                )
       in StringMap.add n (L.define_global n init the_module) m in
     List.fold_left global_var StringMap.empty globals in
 
@@ -118,6 +123,7 @@ let translate (globals, functions) =
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
         A.IntLiteral i -> L.const_int i32_t i
+      | A.BoolLiteral b -> L.const_int i1_t (if b then 1 else 0)
       | A.DblLiteral d -> L.const_float f64_t d
       | A.StrLiteral s -> build_string_from_code (L.const_string context s)
       | A.Noexpr -> L.const_int i32_t 0
@@ -175,7 +181,8 @@ let translate (globals, functions) =
           | A.Not     -> L.build_not) e' "tmp" builder
       | A.Assign (s, e) -> let e' = expr builder e in
                      ignore (L.build_store e' (lookup s) builder); e'
-      | A.Call ("print_int", [e]) -> L.build_call printf_func [| int_format_str ; expr builder e |] "print_int" builder
+      | A.Call ("print_int", [e])  -> L.build_call printf_func [| int_format_str ; expr builder e |] "print_int" builder
+      | A.Call ("print_bool", [e]) -> L.build_call printf_func [| int_format_str ; expr builder e |] "print_bool" builder
       | A.Call ("print_double", [e]) -> L.build_call printf_func [| dbl_format_str ; expr builder e |] "print_double" builder
 
       | A.Call ("print_string", [e]) -> L.build_call printf_func [| str_format_str ; expr builder e |] "print_string" builder

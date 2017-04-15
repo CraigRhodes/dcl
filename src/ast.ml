@@ -5,12 +5,13 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Void | Double | String
+type typ = Int | Void | Double | String | Bool
 
 type bind = typ * string
 
 type expr =
     IntLiteral of int
+  | BoolLiteral of bool
   | DblLiteral of float
   | StrLiteral of string
   | Id of string
@@ -61,6 +62,8 @@ let string_of_uop = function
 
 let rec string_of_expr = function
     IntLiteral(l) -> string_of_int l
+  | BoolLiteral(true) -> "true"
+  | BoolLiteral(false) -> "false"
   | DblLiteral(l) -> string_of_float l
   | StrLiteral(l) -> l
   | Id(s) -> s
@@ -87,6 +90,7 @@ let rec string_of_stmt = function
 
 let string_of_typ = function
     Int -> "int"
+  | Bool -> "bool"
   | Double -> "double"
   | String -> "string"
   | Void -> "void"
