@@ -156,7 +156,7 @@ let check (globals, functions) =
       | Unop(op, e) as ex -> let t = expr e in
    (match op with
      Neg when t = Int -> Int
-   | Not when t = Int -> Int
+   | Not when t = Bool -> Bool
 
    | Neg when t = Double -> Double
 
