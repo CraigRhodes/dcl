@@ -58,13 +58,6 @@ formal_list:
 
 
 
-primitive_literal:
-  Int_Literal      {Int_Literal($1)}
-| Double_Literal   {Double_Literal($1) }
-| String_Literal   {String_Literal($1)}
-| Bool_Literal     {Bool_Literal($1)}
-
-
 typ:
     INT { Int }
   | DOUBLE { Double }
