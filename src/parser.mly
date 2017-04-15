@@ -8,7 +8,7 @@ open Ast
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE EXPONT ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT BOOL VOID DOUBLE STRING ARRAY
+%token RETURN IF ELSE FOR WHILE INT BOOL VOID DOUBLE STRING 
 %token <int> INTLITERAL
 %token <float> DBLLITERAL
 %token <string> STRLITERAL
@@ -56,8 +56,6 @@ formal_list:
     typ ID                   { [($1,$2)] }
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
 
-array_type:
-  LSQUARE primitive_literal_list RSQUARE { $2 } 
 
 primitive_literal_list:
   /* nothing */     { [] }
@@ -95,6 +93,8 @@ stmt_list:
 
 stmt:
     expr SEMI { Expr $1 }
+  | ARRAY typ ID ASSIGN array_type {Array($2, $3, $5 )}
+  | ARRAY typ ID ASSIGN ARRAY LPAREN INTLITERAL RPAREN (FixedArray($2, $3, $7))
   | RETURN SEMI { Return Noexpr }
   | RETURN expr SEMI { Return $2 }
   | LBRACE stmt_list RBRACE { Block(List.rev $2) }
