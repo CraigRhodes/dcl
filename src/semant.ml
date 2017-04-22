@@ -49,7 +49,7 @@ let check (globals, functions) =
   then raise (Failure ("function print_double may not be defined")) else ();
 
   if List.mem "print_string" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function print_double may not be defined")) else ();
+  then raise (Failure ("function print_string may not be defined")) else ();
 
   if List.mem "printbig" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function printbig may not be defined")) else ();

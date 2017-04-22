@@ -6,7 +6,8 @@ int main() {
 /* this is a comment */
 int g;
 string hello;
+hello = "hello world";
 print_int(12 + 13);
-/*print_big(34); */
+print_string("hi");
 return 4;
 }
