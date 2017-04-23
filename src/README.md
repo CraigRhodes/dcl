@@ -23,7 +23,7 @@ invokes "cc" (the stock C compiler) to assemble the .s file, link in
 printbig.o, and generate an executable.  See testall.sh for details.
 
 ------------------------------
-Installation under Ubuntu 15.10
+## Installation under Ubuntu 15.10
 
 LLVM 3.6 is the default under 15.10, so we ask for a matching version of the
 OCaml library.
@@ -37,7 +37,7 @@ make
 ./testall.sh
 
 ------------------------------
-Installation under Ubuntu 14.04
+## Installation under Ubuntu 14.04
 
 The default LLVM package is 3.4, so we install the matching OCaml
 library using opam.  The default version of opam under 14.04 is too
@@ -55,7 +55,7 @@ eval `opam config env`
 opam install llvm.3.4 ocamlfind
 
 ------------------------------
-Installation under OS X
+## Installation under OS X
 
 1. Install Homebrew:
 
@@ -177,7 +177,7 @@ Installation under OS X
    As before, you may also modify the path to lli in testall.sh
 
 ------------------------------
-To run and test:
+## To run and test:
 
 $ make
 ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 dcl.native
