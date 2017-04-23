@@ -1,4 +1,4 @@
-The DCL compiler
+# The DCL compiler
 
 Coded in OCaml, this takes a highly stripped-down subset of C (ints,
 bools, and void types, arithmetic, if-else, for, and while statements,
