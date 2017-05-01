@@ -2,7 +2,7 @@ int foo() {}
 
 void bar() {}
 
-int print() {} /* Should not be able to define print */
+int print_int() {} /* Should not be able to define print_int */
 
 void baz() {}
 
