@@ -7,4 +7,4 @@ void main() {
 
 }
 
-//verifies that setting string to int fails
+/* verifies that setting string to int fails */

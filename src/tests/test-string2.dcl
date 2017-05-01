@@ -8,4 +8,4 @@ void main() {
 	print_string(i);
 }
 
-//should work because string + string concatenation is supported
+/*should work because string + string concatenation is supported */

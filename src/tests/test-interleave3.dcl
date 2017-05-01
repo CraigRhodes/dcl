@@ -15,4 +15,4 @@ int main() {
 
 }
 
-//verifying that interleaving of initializing variables and calling functions
+/* verifying that interleaving of initializing variables and calling functions */

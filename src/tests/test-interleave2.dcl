@@ -1,5 +1,5 @@
 void test(double x) {
-	print_double(x);
+	return x;
 
 }
 
@@ -11,4 +11,4 @@ int main() {
 	return a;
 }
 
-//interleaving calling other functions and initializing variables
+/* interleaving calling other functions and initializing variables */

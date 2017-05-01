@@ -32,5 +32,5 @@ int main(){
 
 	
 }
-//verifies string concatenation 
+/ * verifies string concatenation */
 

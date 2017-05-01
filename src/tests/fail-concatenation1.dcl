@@ -7,4 +7,4 @@ void main() {
 	i = g + h;
 }
 
-//should fail because string + array concatenation not supported
+/* should fail because string + array concatenation not supported */

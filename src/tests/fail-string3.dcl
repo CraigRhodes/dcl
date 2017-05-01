@@ -7,4 +7,4 @@ void main() {
 	i = g + h;
 }
 
-//should fail because string + double concatenation not allowed
+/* should fail because string + double concatenation not allowed */

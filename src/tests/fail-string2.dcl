@@ -6,4 +6,4 @@ void main() {
 	h = 3;
 	i = g + h;
 }
-//should fail because string + int concatenation not allowed 
+/* should fail because string + int concatenation not allowed */

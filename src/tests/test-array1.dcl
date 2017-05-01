@@ -6,4 +6,4 @@ void main() {
 
 }
 
-//verifies printing a value at array index works
+/* verifies printing a value at array index works */
