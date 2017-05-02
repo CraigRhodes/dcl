@@ -7,7 +7,7 @@ open Ast
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE EXPONT ASSIGN NOT
-%token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
+%token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR BUTEVERYTIME
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID DOUBLE STRING 
 %token <int> INTLITERAL
 %token <float> DBLLITERAL
@@ -39,6 +39,7 @@ decls:
    /* nothing */ { [], [] }
  | decls vdecl { ($2 :: fst $1), snd $1 }
  | decls fdecl { fst $1, ($2 :: snd $1) }
+ | decls bdecl { fst $1, ($2 :: snd $1) }
 
 fdecl:
    typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
@@ -47,6 +48,14 @@ fdecl:
 	 formals = $4;
 	 locals = List.rev $7;
 	 body = List.rev $8 } }
+
+bdecl:
+   typ ID ASSIGN expr BUTEVERYTIME LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
+     { { typ = $1;
+   fname = "__" ^ $2;
+   formals = $7;
+   locals = List.rev $10;
+   body = List.rev $11 } }
 
 formals_opt:
     /* nothing */ { [] }

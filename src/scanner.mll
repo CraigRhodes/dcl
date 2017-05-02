@@ -63,6 +63,7 @@ rule token = parse
 
 (* Keywords for functions *)
 | "return" { RETURN }
+| "buteverytime" { BUTEVERYTIME }
 
 (* Keywords for Data Types *)
 | "int"    { INT }
