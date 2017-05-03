@@ -32,6 +32,7 @@ let translate (globals, functions) =
   and i8_t   = L.i8_type     context
   and i1_t   = L.i1_type     context
   and f64_t  = L.double_type context
+  and ptr_t = L.pointer_type (L.i8_type (context)) 
   and void_t = L.void_type   context in
 
   let rec int_range = function
@@ -61,21 +62,34 @@ let translate (globals, functions) =
   let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func = L.declare_function "printf" printf_t the_module in
 
+  (* String concatenation *)
   let strcmp_t = L.function_type i32_t [| L.pointer_type i8_t ; L.pointer_type i8_t |] in
   let strcmp_func = L.declare_function "strcmp" strcmp_t the_module in
 
   let addstr_t = L.function_type (L.pointer_type i8_t) [| L.pointer_type i8_t ; L.pointer_type i8_t |] in
   let addstr_func = L.declare_function "add_str" addstr_t the_module in
   
+  (* Exponent *)
   let expint_t = L.function_type f64_t [| i32_t ; i32_t |] in
   let expint_func = L.declare_function "exp_int" expint_t the_module in
 
   let expdbl_t = L.function_type f64_t [| f64_t ; f64_t |] in
   let expdbl_func = L.declare_function "exp_dbl" expdbl_t the_module in
 
-  (* Declare the built-in printbig() function *)
-  let printbig_t = L.function_type i32_t [| i32_t |] in
-  let printbig_func = L.declare_function "printbig" printbig_t the_module in
+  (* File I/O *)
+  let open_t = L.function_type i32_t [| ptr_t; i32_t; i32_t |] in
+  let open_func = L.declare_function "open" open_t the_module in
+
+  let close_t = L.function_type i32_t [| i32_t |] in
+  let close_func = L.declare_function "close" close_t the_module in
+
+  let read_t = L.function_type i32_t [| i32_t; ptr_t; i32_t |] in
+  let read_func = L.declare_function "read" read_t the_module in
+
+  let write_t = L.function_type i32_t [| i32_t; ptr_t; i32_t |] in
+  let write_func = L.declare_function "write" write_t the_module in 
+
+  
 
   (* Define each function (arguments and return type) so we can call it *)
   let function_decls = 
@@ -192,9 +206,24 @@ let translate (globals, functions) =
       | A.Call ("print_double", [e]) -> L.build_call printf_func [| dbl_format_str ; expr builder e |] "print_double" builder
 
       | A.Call ("print_string", [e]) -> L.build_call printf_func [| str_format_str ; expr builder e |] "print_string" builder
+      (* File I/O calls *)
+      | A.Call("bopen", e) ->
+        let evald_expr_list = List.map (expr builder)e in
+        let evald_expr_arr = Array.of_list evald_expr_list in
+        L.build_call open_func evald_expr_arr "open" builder
+      | A.Call("bclose", e) ->
+        let evald_expr_list = List.map (expr builder)e in
+        let evald_expr_arr = Array.of_list evald_expr_list in
+        L.build_call close_func evald_expr_arr "close" builder
+      | A.Call("bread", e) ->
+        let evald_expr_list = List.map (expr builder)e in
+        let evald_expr_arr = Array.of_list evald_expr_list in
+        L.build_call read_func evald_expr_arr "read" builder
+      | A.Call("bwrite", e) ->
+        let evald_expr_list = List.map (expr builder)e in
+        let evald_expr_arr = Array.of_list evald_expr_list in
+        L.build_call write_func evald_expr_arr "write" builder
       (* https://www.ibm.com/developerworks/library/os-createcompilerllvm1/ *)
-
-      | A.Call ("printbig", [e]) -> L.build_call printbig_func [| (expr builder e) |] "printbig" builder
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
    let actuals = List.rev (List.map (expr builder) (List.rev act)) in

@@ -1,0 +1,35 @@
+let built_in_decls =  
+      StringMap.add "bopen"  (* key *)
+       { typ = Void; fname = "bopen"; formals = [(String, "name"); (Int, "flags"); (Int, "mode")];
+         body = [] } (* value *)
+      (
+        StringMap.add "bclose"  (* key *)
+       { typ = Void; fname = "bopen"; formals = [(Int, "fd")]; locals = []; body = [] }
+
+      (
+        StringMap.add "bread"
+         { typ = Int; fname = "bread"; formals = [(Int, "fd"); (String, "buf"); (Int, "count")]; locals = []; body = [] }
+      (
+        StringMap.add "bwrite"
+        { typ = Int; fname = "write"; formals =  [(Int, "fd"); (String, "buf"); (Int, "count")]; locals = []; body = [] };
+
+      (
+      StringMap.add "print_double"  
+       { typ = Void; fname = "print"; formals = [(Double, "x")];
+         body = [] } 
+       
+       (StringMap.add "print_int" 
+        { typ = Void; fname = "print"; formals = [(Int, "x")];
+          body = [] }
+
+        (StringMap.add "print_bool"
+        { typ = Void; fname = "printb"; formals = [(Bool, "x")];
+          body = [] }
+
+
+        (StringMap.singleton "print_string"
+        
+         { typ = String; fname = "print_string"; formals = [(String, "x")];
+           body = [] })
+
+       ) ))

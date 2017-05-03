@@ -59,10 +59,6 @@ let check (globals, functions) =
   if List.mem "print_string" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function print_string may not be defined")) else ();
 
-  if List.mem "printbig" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function printbig may not be defined")) else ();
-
-
   if List.mem "exp_int" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function exp_int may not be defined")) else ();
 
@@ -72,12 +68,36 @@ let check (globals, functions) =
   if List.mem "add_str" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function add_str may not be defined")) else ();
 
+  if List.mem "bopen" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function bopen may not be defined")) else ();
+
+  if List.mem "bclose" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function bclose may not be defined")) else ();
+
+  if List.mem "bread" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function bread may not be defined")) else ();
+
+  if List.mem "bwrite" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function bwrite may not be defined")) else ();
+
   report_duplicate (fun n -> "duplicate function " ^ n)
     (List.map (fun fd -> fd.fname) functions);
 
   (* Function declaration for a named function *)
   let built_in_decls =  
-      StringMap.add "print_double"  (* key *)
+      StringMap.add "bwrite"
+        { typ = Int; fname = "bwrite"; formals =  [(Int, "fd"); (String, "buf"); (Int, "count")]; body = [] };
+      (StringMap.add "bread"
+         { typ = Int; fname = "bread"; formals = [(Int, "fd"); (String, "buf"); (Int, "count")];  body = [] }
+      (
+      StringMap.add "bclose"  (* key *)
+       { typ = Int; fname = "bclose"; formals = [(Int, "fd")]; body = [] }
+      ( 
+      StringMap.add "bopen"  (* key *)
+       { typ = Int; fname = "bopen"; formals = [(String, "name"); (Int, "flags"); (Int, "mode")];
+         body = [] } (* value *)
+
+      (StringMap.add "print_double"  (* key *)
        { typ = Void; fname = "print"; formals = [(Double, "x")];
          body = [] } (* value *)
        
@@ -95,8 +115,9 @@ let check (globals, functions) =
          { typ = String; fname = "print_string"; formals = [(String, "x")];
            body = [] })
 
-      ) )
+      ) )))))
    in
+
 
 
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)

@@ -7,7 +7,6 @@ int main() {
 int g;
 string hello;
 hello = "hello world";
-print_int(12 + 13);
 print_string("hi");
 return 4;
 }
