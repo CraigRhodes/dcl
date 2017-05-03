@@ -1,8 +1,12 @@
 (* Semantic checking for the DCL compiler *)
 
+module A = Ast
 open Ast
+open Hashtbl
+open Llvm
 
 module StringMap = Map.Make(String)
+let symbols:(string, A.typ) Hashtbl.t = Hashtbl.create 100 
 
 (* Semantic checking of a program. Returns void if successful,
    throws an exception if something is wrong.
@@ -23,6 +27,10 @@ let check (globals, functions) =
   let check_not_void exceptf = function
       (Void, n) -> raise (Failure (exceptf n))
     | _ -> ()
+  in
+
+  let check_local_void exceptf t n = 
+      if t == Void then raise (Failure (exceptf n)) 
   in
   
   (* Raise an exception of the given rvalue type cannot be assigned to
@@ -71,21 +79,21 @@ let check (globals, functions) =
   let built_in_decls =  
       StringMap.add "print_double"  (* key *)
        { typ = Void; fname = "print"; formals = [(Double, "x")];
-         locals = []; body = [] } (* value *)
+         body = [] } (* value *)
        
        (StringMap.add "print_int" 
         { typ = Void; fname = "print"; formals = [(Int, "x")];
-          locals = []; body = [] }
+          body = [] }
 
         (StringMap.add "print_bool"
         { typ = Void; fname = "printb"; formals = [(Bool, "x")];
-          locals = []; body = [] }
+          body = [] }
 
 
         (StringMap.singleton "print_string"
         
          { typ = String; fname = "print_string"; formals = [(String, "x")];
-           locals = []; body = [] })
+           body = [] })
 
       ) )
    in
@@ -107,23 +115,18 @@ let check (globals, functions) =
     List.iter (check_not_void (fun n -> "illegal void formal " ^ n ^
       " in " ^ func.fname)) func.formals;
 
-    report_duplicate (fun n -> "duplicate formal " ^ n ^ " in " ^ func.fname)
-      (List.map snd func.formals);
-
-    List.iter (check_not_void (fun n -> "illegal void local " ^ n ^
-      " in " ^ func.fname)) func.locals;
-
-    report_duplicate (fun n -> "duplicate local " ^ n ^ " in " ^ func.fname)
-      (List.map snd func.locals);
+    report_duplicate (fun n -> "duplicate variable " ^ n ^ " in " ^ func.fname)
+      (List.map snd func.formals
+      );
 
     (* Type of each variable (global, formal, or local *)
-    let symbols = List.fold_left (fun m (t, n) -> StringMap.add n t m)
-  StringMap.empty (globals @ func.formals @ func.locals )
+    let symbol = List.iter (fun (t, n) -> Hashtbl.add symbols n t )
+  (globals @ func.formals)
     in
 
     let type_of_identifier s =
-      try StringMap.find s symbols
-      with Not_found -> raise (Failure ("undeclared identifier " ^ s))
+      try Hashtbl.find symbols s
+      with Not_found -> raise (Failure ("undeclared identifier " ^ s ))
     in
 
     (* Return the type of an expression or throw an exception *)
@@ -168,6 +171,12 @@ let check (globals, functions) =
         check_assign lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
              " = " ^ string_of_typ rt ^ " in " ^ 
              string_of_expr ex))
+      | LocalAssign (t, s, e) as ex -> check_local_void (fun n -> "illegal void local " ^ n ^
+      " in " ^ func.fname) t s; let lt = t
+                                and rt = expr e in
+        check_assign lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
+             " = " ^ string_of_typ rt ^ " in " ^ 
+             string_of_expr ex)); Hashtbl.add symbols s t; t
       | Call(fname, actuals) as call -> let fd = function_decl fname in
          if List.length actuals != List.length fd.formals then
            raise (Failure ("expecting " ^ string_of_int
@@ -195,6 +204,8 @@ let check (globals, functions) =
          | [] -> ()
         in check_block sl
       | Expr e -> ignore (expr e)
+      | Local (t, s) as ex -> check_local_void (fun n -> "illegal void local " ^ n ^
+      " in " ^ func.fname) t s; ignore(Hashtbl.add symbols s t);
       | Return e -> let t = expr e in if t = func.typ then () else
          raise (Failure ("return gives " ^ string_of_typ t ^ " expected " ^
                          string_of_typ func.typ ^ " in " ^ string_of_expr e))

@@ -28,6 +28,7 @@ type token =
   | FOR
   | WHILE
   | INT
+  | BOOL
   | VOID
   | DOUBLE
   | STRING

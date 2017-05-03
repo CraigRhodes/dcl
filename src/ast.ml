@@ -1,5 +1,6 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
+
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or  | Exp
 
@@ -8,6 +9,7 @@ type uop = Neg | Not
 type typ = Int | Void | Double | String | Bool
 
 type bind = typ * string
+
 
 type expr =
     IntLiteral of int
@@ -20,6 +22,7 @@ type expr =
   | Assign of string * expr
   | Call of string * expr list
   | Noexpr
+  | LocalAssign of typ * string * expr
 
 type stmt =
     Block of stmt list
@@ -28,12 +31,12 @@ type stmt =
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
   | While of expr * stmt
+  | Local of typ * string
 
 type func_decl = {
     typ : typ;
     fname : string;
     formals : bind list;
-    locals : bind list;
     body : stmt list;
   }
 
@@ -60,6 +63,13 @@ let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
 
+let string_of_typ = function
+    Int -> "int"
+  | Bool -> "bool"
+  | Double -> "double"
+  | String -> "string"
+  | Void -> "void"
+
 let rec string_of_expr = function
     IntLiteral(l) -> string_of_int l
   | BoolLiteral(true) -> "true"
@@ -74,6 +84,8 @@ let rec string_of_expr = function
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
+  | LocalAssign(t, s, e) -> string_of_typ t ^ " " ^ s ^ " = " ^ string_of_expr e 
+
 
 let rec string_of_stmt = function
     Block(stmts) ->
@@ -87,13 +99,8 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+  | Local(t, s) -> string_of_typ t ^ " " ^ s ^ ";\n"
 
-let string_of_typ = function
-    Int -> "int"
-  | Bool -> "bool"
-  | Double -> "double"
-  | String -> "string"
-  | Void -> "void"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
@@ -101,7 +108,6 @@ let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
   fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
   ")\n{\n" ^
-  String.concat "" (List.map string_of_vdecl fdecl.locals) ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 

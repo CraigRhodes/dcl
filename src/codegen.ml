@@ -16,7 +16,14 @@ This is for DCL.
 module L = Llvm
 module A = Ast
 
+open Printf
+open List 
+open Hashtbl
+open Llvm 
+
 module StringMap = Map.Make(String)
+
+let local_vars:(string, llvalue) Hashtbl.t = Hashtbl.create 100 
 
 let translate (globals, functions) =
   let context = L.global_context () in
@@ -71,7 +78,7 @@ let translate (globals, functions) =
   let printbig_func = L.declare_function "printbig" printbig_t the_module in
 
   (* Define each function (arguments and return type) so we can call it *)
-  let function_decls =
+  let function_decls = 
     let function_decl m fdecl =
       let name = fdecl.A.fname
       and formal_types =
@@ -82,6 +89,7 @@ let translate (globals, functions) =
   
   (* Fill in the body of the given function *)
   let build_function_body fdecl =
+    Hashtbl.clear local_vars;
     let (the_function, _) = StringMap.find fdecl.A.fname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
@@ -92,22 +100,17 @@ let translate (globals, functions) =
     (* Construct the function's "locals": formal arguments and locally
        declared variables.  Allocate each on the stack, initialize their
        value, if appropriate, and remember their values in the "locals" map *)
-    let local_vars =
-      let add_formal m (t, n) p = L.set_value_name n p;
+    let add_formal (t, n) p = L.set_value_name n p;
   let local = L.build_alloca (ltype_of_typ t) n builder in
-  ignore (L.build_store p local builder);
-  StringMap.add n local m in
+  ignore(L.build_store p local builder);
+  Hashtbl.add local_vars n local in 
 
-      let add_local m (t, n) =
-  let local_var = L.build_alloca (ltype_of_typ t) n builder
-  in StringMap.add n local_var m in
+  let formals = ignore(List.iter2 add_formal fdecl.A.formals 
+  (Array.to_list (L.params the_function))) in 
 
-      let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals
-          (Array.to_list (L.params the_function)) in
-      List.fold_left add_local formals fdecl.A.locals in
 
     (* Return the value for a variable or formal argument *)
-    let lookup n = try StringMap.find n local_vars
+    let lookup n = try Hashtbl.find local_vars n 
                    with Not_found -> StringMap.find n global_vars
     in
 
@@ -125,9 +128,9 @@ let translate (globals, functions) =
         A.IntLiteral i -> L.const_int i32_t i
       | A.BoolLiteral b -> L.const_int i1_t (if b then 1 else 0)
       | A.DblLiteral d -> L.const_float f64_t d
+      | A.Id s -> L.build_load (lookup s) s builder
       | A.StrLiteral s -> build_string_from_code (L.const_string context s)
       | A.Noexpr -> L.const_int i32_t 0
-      | A.Id s -> L.build_load (lookup s) s builder
       | A.Binop (e1, op, e2) ->
     let e1' = expr builder e1
     and e2' = expr builder e2 in
@@ -181,6 +184,9 @@ let translate (globals, functions) =
           | A.Not     -> L.build_not) e' "tmp" builder
       | A.Assign (s, e) -> let e' = expr builder e in
                      ignore (L.build_store e' (lookup s) builder); e'
+      | A.LocalAssign (t, s, e) -> let local_var = L.build_alloca (ltype_of_typ t) s builder in
+       Hashtbl.add local_vars s local_var;
+      let e' = expr builder e in ignore (L.build_store e' local_var builder); e'
       | A.Call ("print_int", [e])  -> L.build_call printf_func [| int_format_str ; expr builder e |] "print_int" builder
       | A.Call ("print_bool", [e]) -> L.build_call printf_func [| int_format_str ; expr builder e |] "print_bool" builder
       | A.Call ("print_double", [e]) -> L.build_call printf_func [| dbl_format_str ; expr builder e |] "print_double" builder
@@ -241,7 +247,9 @@ let translate (globals, functions) =
     let merge_bb = L.append_block context "merge" the_function in
     ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
     L.builder_at_end context merge_bb
-
+      | A.Local (t, s) -> 
+      ignore (let local_var = L.build_alloca (ltype_of_typ t) s builder in
+       Hashtbl.add local_vars s local_var); builder
       | A.For (e1, e2, e3, body) -> stmt builder
       ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
     in

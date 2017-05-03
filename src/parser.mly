@@ -32,6 +32,7 @@ open Ast
 
 %%
 
+
 program:
   decls EOF { $1 }
 
@@ -41,12 +42,11 @@ decls:
  | decls fdecl { fst $1, ($2 :: snd $1) }
 
 fdecl:
-   typ ID LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
+   typ ID LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
      { { typ = $1;
 	 fname = $2;
 	 formals = $4;
-	 locals = List.rev $7;
-	 body = List.rev $8 } }
+	 body = List.rev $7 } }
 
 formals_opt:
     /* nothing */ { [] }
@@ -86,6 +86,7 @@ stmt:
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
      { For($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
+  | typ ID SEMI {Local($1, $2)}
 
 expr_opt:
     /* nothing */ { Noexpr }
@@ -116,6 +117,7 @@ expr:
   | ID ASSIGN expr   { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
+  | typ ID ASSIGN expr {LocalAssign($1, $2, $4)}
 
 actuals_opt:
     /* nothing */ { [] }
