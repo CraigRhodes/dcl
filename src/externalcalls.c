@@ -26,6 +26,8 @@ char * add_str(char *x, char *y)
 #ifdef BUILD_TEST
 int main()
 {
+  printf("5 ^ -2 == %f\n", exp_int(5, -2));
+  printf("5 ^ 0.5 == %f\n", exp_dbl(5.0, 0.5));
   printf("\"swe\" + \"et!\" == \"%s\"\n", add_str("swe", "et!"));
   return 0;
 }

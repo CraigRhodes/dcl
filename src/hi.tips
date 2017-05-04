@@ -1,3 +1,0 @@
-1. "ocamlyacc -v parser.mly" produces a "parser.output" file that lets you see a hybrid of the SLR table and LR(0) automaton states.
-
-2. "export OCAMLRUNPARAM=\"p\"" makes OCaml show its steps in using the parser.output thing.

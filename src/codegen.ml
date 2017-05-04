@@ -42,7 +42,7 @@ let translate (globals, functions) =
   let ltype_of_typ = function
       A.Int -> i32_t
     | A.Bool -> i1_t
-    | A.String -> L.pointer_type i8_t
+    | A.String -> L.pointer_type i8_t 
     | A.Double -> f64_t
     | A.Void -> void_t in
 
@@ -88,6 +88,12 @@ let translate (globals, functions) =
 
   let write_t = L.function_type i32_t [| i32_t; ptr_t; i32_t |] in
   let write_func = L.declare_function "write" write_t the_module in 
+
+  let free_t = L.function_type void_t [| ptr_t |] in
+  let free_func = L.declare_function "free" free_t the_module in
+
+  let malloc_t = L.function_type ptr_t [| i32_t |] in
+  let malloc_func = L.declare_function "malloc" malloc_t the_module in
 
   
 
@@ -223,6 +229,13 @@ let translate (globals, functions) =
         let evald_expr_list = List.map (expr builder)e in
         let evald_expr_arr = Array.of_list evald_expr_list in
         L.build_call write_func evald_expr_arr "write" builder
+      (* malloc and free for file i/o *)
+      | A.Call("free", e) ->
+        L.build_call free_func (Array.of_list (List.map (expr builder) e)) "" builder
+      | A.Call ("malloc", e) ->
+        let evald_expr_list = List.map (expr builder)e in
+        let evald_expr_arr = Array.of_list evald_expr_list in
+        L.build_call malloc_func evald_expr_arr "malloc" builder
       (* https://www.ibm.com/developerworks/library/os-createcompilerllvm1/ *)
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in

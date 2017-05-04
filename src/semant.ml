@@ -80,13 +80,23 @@ let check (globals, functions) =
   if List.mem "bwrite" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function bwrite may not be defined")) else ();
 
+  if List.mem "malloc" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function malloc may not be defined")) else ();
+
+  if List.mem "free" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function free may not be defined")) else ();
+
   report_duplicate (fun n -> "duplicate function " ^ n)
     (List.map (fun fd -> fd.fname) functions);
 
   (* Function declaration for a named function *)
   let built_in_decls =  
-      StringMap.add "bwrite"
-        { typ = Int; fname = "bwrite"; formals =  [(Int, "fd"); (String, "buf"); (Int, "count")]; body = [] };
+    StringMap.add "free" 
+    { typ = Void; fname = "free"; formals = [(String, "tofree")]; body = [] }
+    (StringMap. add "malloc"
+     { typ = String; fname = "malloc"; formals = [(Int, "size")]; body = [] }
+      (StringMap.add "bwrite"
+        { typ = Int; fname = "bwrite"; formals = [(Int, "fd"); (String, "buf"); (Int, "count")]; body = []}
       (StringMap.add "bread"
          { typ = Int; fname = "bread"; formals = [(Int, "fd"); (String, "buf"); (Int, "count")];  body = [] }
       (
@@ -115,7 +125,7 @@ let check (globals, functions) =
          { typ = String; fname = "print_string"; formals = [(String, "x")];
            body = [] })
 
-      ) )))))
+      ) )))))))
    in
 
 
