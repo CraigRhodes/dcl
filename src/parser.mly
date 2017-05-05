@@ -54,7 +54,6 @@ bdecl:
      { { typ = $1;
    fname = "__" ^ $2;
    formals = $7;
-   locals = List.rev $10;
    body = List.rev $11 } }
 
 formals_opt:
