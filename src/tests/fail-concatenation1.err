@@ -1,1 +1,1 @@
-Fatal error: exception Failure("illegal concatenation of string and array")
+Fatal error: exception Failure("illegal character [")

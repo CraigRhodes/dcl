@@ -1,10 +1,10 @@
-int add(int x, int y)
-{
-  return x + y;
-}
 
 int main()
 {
-  print_int( add(17, 25) );
+	int a;
+	int b;
+	a = 17;
+	b = 25; 
+	print_int(a+b);
   return 0;
 }

@@ -40,10 +40,6 @@ parser.ml parser.mli : parser.mly
 
 %.cmx : %.ml
 	ocamlfind ocamlopt -c -package llvm $<
-
-# Testing the "printbig" example
-
-
 	
 externalcalls : externalcalls.c
 	cc -o externalcalls -DBUILD_TEST externalcalls.c -lm
