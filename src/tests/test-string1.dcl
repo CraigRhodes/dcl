@@ -9,7 +9,7 @@ string colorpurple() {
 	string color = "Like the color purple. Where do it come from?";
 	string response = leadin + color;
 	print_string(response);
-	return response
+	return response;
 	
 }
 
@@ -17,7 +17,7 @@ double groundhog_day() {
 	double dayone = 42.0;
 	double daytwo = 42.0;
 	double daythree = 42.0;
-	print_string("it's groundhog day!!!!!!!")
+	print_string("fasfas");
 	return daythree; 
 
 
@@ -32,5 +32,5 @@ int main(){
 
 	
 }
-/ * verifies string concatenation */
+/* verifies string concatenation */
 
