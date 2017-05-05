@@ -2,7 +2,7 @@ double main() {
 	double a;
 	string b;
 	b = "hello";
-	a = 6^2; 
+	a = b^2; 
 	print_double(a);
 	return a;
 }

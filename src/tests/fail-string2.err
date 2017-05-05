@@ -1,1 +1,1 @@
-Fatal error: exception Failure("illegal assignment of string to int")
+Fatal error: exception Failure("illegal binary operator string + int in g + h")

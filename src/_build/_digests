@@ -20,7 +20,7 @@
 "Resource: /home/dcl-user/dcl/dcl.ml": "\176G\131\251v\188\152\248\157s'\150\203\147Vo"
 "Rule: ocaml: ml & cmi -> cmx & o (%=codegen )": "_x\241k)\230\157\162\196:\"\215\128\154l$"
 "Rule: ocaml dependencies ml (%=codegen )": "!\020\221I\195\171\005x\189\204];:\229\192\011"
-"Rule: ocaml: cmx* & o* -> native (%=dcl )": "c\n7\128\135B\161\139A\001\239Pb\134A\n"
+"Rule: ocaml: cmx* & o* -> native (%=dcl )": "\227(P\165\132\173Z\154\190z;\007\164\251\024\206"
 "Resource: /home/dcl-user/dcl/parser.mly": "Y\139\226p\176\200\196!aUf<\135u\233o"
 "Rule: ocaml: mli -> cmi (%=parser )": "\0291\001\023\023\027V\235\031(_`\b\147\203\240"
 "Rule: ocaml: ml -> cmo & cmi (%=dcl )": "a3I\002\207\017&/\162\159\131G\177\231W\191"
