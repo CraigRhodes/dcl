@@ -39,8 +39,8 @@ program:
 decls:
    /* nothing */ { [], [] }
  | decls vdecl { ($2 :: fst $1), snd $1 }
+ | decls bdecl { fst $2 :: fst $1, (snd $2 :: snd $1) }
  | decls fdecl { fst $1, ($2 :: snd $1) }
- | decls bdecl { fst $1, ($2 :: snd $1) }
 
 fdecl:
    typ ID LPAREN formals_opt RPAREN LBRACE stmt_list RBRACE
@@ -50,11 +50,11 @@ fdecl:
 	 body = List.rev $7 } }
 
 bdecl:
-   typ ID ASSIGN expr BUTEVERYTIME LPAREN formals_opt RPAREN LBRACE vdecl_list stmt_list RBRACE
-     { { typ = $1;
+   typ ID ASSIGN expr BUTEVERYTIME LPAREN expr RPAREN LBRACE stmt_list RBRACE
+     { (($1, $2), { typ = Void;
    fname = "__" ^ $2;
-   formals = $7;
-   body = List.rev $11 } }
+   formals = [];
+   body = If($7, Block([]), Return Noexpr) :: (List.rev $10) }) }
 
 formals_opt:
     /* nothing */ { [] }
@@ -63,8 +63,6 @@ formals_opt:
 formal_list:
     typ ID                   { [($1,$2)] }
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
-
-
 
 typ:
     INT { Int }
