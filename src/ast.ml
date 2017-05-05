@@ -33,14 +33,19 @@ type stmt =
   | While of expr * stmt
   | Local of typ * string
 
+type globalstmt = 
+    Global of typ * string
+  | GlobalAssign of typ * string * expr
+
 type func_decl = {
     typ : typ;
     fname : string;
     formals : bind list;
     body : stmt list;
   }
+  
 
-type program = bind list * func_decl list
+type program = globalstmt list * func_decl list
 
 (* Pretty-printing functions *)
 
@@ -102,7 +107,9 @@ let rec string_of_stmt = function
   | Local(t, s) -> string_of_typ t ^ " " ^ s ^ ";\n"
 
 
-let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+let string_of_globalstmt = function 
+    Global(t,s) -> string_of_typ t ^ " " ^ s ^ ";\n"
+  | GlobalAssign(t,s,e) -> string_of_typ t ^ " " ^ s ^ " = " ^ string_of_expr e ^ ";\n"
 
 let string_of_fdecl fdecl =
   string_of_typ fdecl.typ ^ " " ^
@@ -112,5 +119,5 @@ let string_of_fdecl fdecl =
   "}\n"
 
 let string_of_program (vars, funcs) =
-  String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
+  String.concat "" (List.map string_of_globalstmt vars) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs)

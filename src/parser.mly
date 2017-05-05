@@ -38,7 +38,7 @@ program:
 
 decls:
    /* nothing */ { [], [] }
- | decls vdecl { ($2 :: fst $1), snd $1 }
+ | decls globalstmt { ($2 :: fst $1), snd $1 }
  | decls bdecl { fst $2 :: fst $1, (snd $2 :: snd $1) }
  | decls fdecl { fst $1, ($2 :: snd $1) }
 
@@ -71,16 +71,14 @@ typ:
   | VOID { Void }
   | BOOL { Bool }
 
-vdecl_list:
+globalstmt_list:
     /* nothing */    { [] }
-  | vdecl_list vdecl { $2 :: $1 }
-
-vdecl:
-   typ ID SEMI { ($1, $2) }
+  | globalstmt_list globalstmt { $2 :: $1 }
 
 stmt_list:
     /* nothing */  { [] }
   | stmt_list stmt { $2 :: $1 }
+
 
 stmt:
     expr SEMI { Expr $1 }
@@ -93,6 +91,10 @@ stmt:
      { For($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
   | typ ID SEMI {Local($1, $2)}
+
+globalstmt:
+    typ ID SEMI { Global($1, $2) }
+  | typ ID ASSIGN expr SEMI { GlobalAssign($1, $2, $4) }
 
 expr_opt:
     /* nothing */ { Noexpr }

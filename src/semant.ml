@@ -7,6 +7,7 @@ open Llvm
 
 module StringMap = Map.Make(String)
 let symbols:(string, A.typ) Hashtbl.t = Hashtbl.create 100 
+let globalsymbols:(string, A.typ) Hashtbl.t = Hashtbl.create 100 
 
 (* Semantic checking of a program. Returns void if successful,
    throws an exception if something is wrong.
@@ -29,7 +30,7 @@ let check (globals, functions) =
     | _ -> ()
   in
 
-  let check_local_void exceptf t n = 
+  let check_var_void exceptf t n = 
       if t == Void then raise (Failure (exceptf n)) 
   in
   
@@ -37,13 +38,15 @@ let check (globals, functions) =
      the given lvalue type *)
   let check_assign lvaluet rvaluet err =
      if lvaluet == rvaluet then lvaluet else raise err
-  in
-   
-  (**** Checking Global Variables ****)
+  in 
 
-  List.iter (check_not_void (fun n -> "illegal void global " ^ n)) globals;
-   
-  report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd globals);
+   let type_of_identifier s =
+      try Hashtbl.find symbols s
+      with Not_found -> try Hashtbl.find globalsymbols s
+                        with Not_found -> raise (Failure ("undeclared identifier " ^ s ))
+    in
+
+    (* Return the type of an expression or throw an exception *)
 
   (**** Checking Functions ****)
 
@@ -150,19 +153,12 @@ let check (globals, functions) =
       (List.map snd func.formals
       );
 
-    (* Type of each variable (global, formal, or local *)
     let symbol = List.iter (fun (t, n) -> Hashtbl.add symbols n t )
-  (globals @ func.formals)
+  func.formals
     in
 
-    let type_of_identifier s =
-      try Hashtbl.find symbols s
-      with Not_found -> raise (Failure ("undeclared identifier " ^ s ))
-    in
-
-    (* Return the type of an expression or throw an exception *)
     let rec expr = function
-  IntLiteral _ -> Int
+  IntLiteral _ -> Int 
       | DblLiteral _ -> Double
       | StrLiteral _ -> String
       | BoolLiteral _ -> Bool
@@ -202,7 +198,7 @@ let check (globals, functions) =
         check_assign lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
              " = " ^ string_of_typ rt ^ " in " ^ 
              string_of_expr ex))
-      | LocalAssign (t, s, e) as ex -> check_local_void (fun n -> "illegal void local " ^ n ^
+      | LocalAssign (t, s, e) as ex -> check_var_void (fun n -> "illegal void local " ^ n ^
       " in " ^ func.fname) t s; let lt = t
                                 and rt = expr e in
         check_assign lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
@@ -225,6 +221,16 @@ let check (globals, functions) =
      then raise (Failure ("expected Bool expression in " ^ string_of_expr e))
      else () in
 
+    
+    let globalstmt = function 
+       Global(t,s) as ex -> check_var_void (fun n -> "illegal void global: " ^ n) t s; Hashtbl.add globalsymbols s t;
+     | GlobalAssign(t,s,e) as ex -> check_var_void (fun n -> "illegal void global: " ^ n) t s; let lt = t
+                                and rt = expr e in
+        check_assign lt rt (Failure ("illegal global assignment " ^ string_of_typ lt ^
+             " = " ^ string_of_typ rt ^ " in " ^ 
+             string_of_globalstmt ex)); Hashtbl.add globalsymbols s t in 
+        let globalvars = List.map globalstmt globals in 
+
     (* Verify a statement or throw an exception *)
     let rec stmt = function
   Block sl -> let rec check_block = function
@@ -235,7 +241,7 @@ let check (globals, functions) =
          | [] -> ()
         in check_block sl
       | Expr e -> ignore (expr e)
-      | Local (t, s) as ex -> check_local_void (fun n -> "illegal void local " ^ n ^
+      | Local (t, s) as ex -> check_var_void (fun n -> "illegal void local " ^ n ^
       " in " ^ func.fname) t s; ignore(Hashtbl.add symbols s t);
       | Return e -> let t = expr e in if t = func.typ then () else
          raise (Failure ("return gives " ^ string_of_typ t ^ " expected " ^
