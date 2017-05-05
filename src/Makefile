@@ -42,7 +42,7 @@ parser.ml parser.mli : parser.mly
 	ocamlfind ocamlopt -c -package llvm $<
 	
 externalcalls : externalcalls.c
-	cc -o externalcalls -DBUILD_TEST externalcalls.c -lm
+	cc -o externalcalls -DBUILD_TEST externalcalls.c
 
 
 
@@ -77,8 +77,8 @@ TESTFILES = $(TESTS:%=test-%.mc) $(TESTS:%=test-%.out) \
 	    $(FAILS:%=fail-%.mc) $(FAILS:%=fail-%.err)
 
 TARFILES = ast.ml codegen.ml Makefile dcl.ml parser.mly README scanner.mll \
-	semant.ml testall.sh $(TESTFILES:%=tests/%) printbig.c arcade-font.pbm \
-	font2c exp.c 
+	semant.ml testall.sh $(TESTFILES:%=tests/%) arcade-font.pbm \
+	font2c externalcalls.c 
 
 dcl-llvm.tar.gz : $(TARFILES)
 	cd .. && tar czf dcl-llvm/dcl-llvm.tar.gz \

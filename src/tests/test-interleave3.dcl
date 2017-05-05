@@ -8,9 +8,9 @@ int main() {
 	int b;
 	a = 5;
 	b = 10;
-	hello_world()
+	hello_world();
 	string s;
-	s = "hello world again!"
+	s = "hello world again!";
 	print_string(s);
 
 }

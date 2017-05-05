@@ -1,4 +1,4 @@
-void test(double x) {
+double test(double x) {
 	return x;
 
 }
