@@ -24,6 +24,7 @@ open Llvm
 module StringMap = Map.Make(String)
 
 let local_vars:(string, llvalue) Hashtbl.t = Hashtbl.create 100 
+let global_vars:(string, llvalue) Hashtbl.t = Hashtbl.create 100
 
 let translate (globals, functions) =
   let context = L.global_context () in
@@ -46,17 +47,17 @@ let translate (globals, functions) =
     | A.Double -> f64_t
     | A.Void -> void_t in
 
-  (* Declare each global variable; remember its value in a map *)
-  let global_vars =
-    let global_var m (t, n) =
+  (*)
+  let add_global t s =
       let init = (match t with 
                     A.Int            -> L.const_int          (ltype_of_typ t) 0 
                   | A.Double         -> L.const_float        (ltype_of_typ t) 0.
                   | A.Bool           -> L.const_int          (ltype_of_typ t) 0
                   | _ (* A.String *) -> L.const_string       context ""
                 )
-      in StringMap.add n (L.define_global n init the_module) m in
-    List.fold_left global_var StringMap.empty globals in
+      in Hashtbl.add global_vars s (L.define_global s init the_module) in *)
+
+  (* Declare each global variable; remember its value in a map *)
 
   (* Declare printf(), which the print built-in function will call *)
   let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
@@ -131,7 +132,9 @@ let translate (globals, functions) =
 
     (* Return the value for a variable or formal argument *)
     let lookup n = try Hashtbl.find local_vars n 
-                   with Not_found -> StringMap.find n global_vars
+                   with Not_found -> try Hashtbl.find global_vars n 
+                                     with Not_found -> raise (Failure ("undeclared id: " ^ n ))
+
     in
 
     let build_string_from_code e' = let size = L.operand (L.size_of (L.type_of e')) 1 in
@@ -251,6 +254,17 @@ let translate (globals, functions) =
       match L.block_terminator (L.insertion_block builder) with
   Some _ -> ()
       | None -> ignore (f builder) in
+
+      let globalstmt = function
+    A.Global(t,s) -> let global_var = L.build_alloca (ltype_of_typ t) s builder in
+       Hashtbl.add global_vars s global_var
+  | A.GlobalAssign(t,s,e) -> let global_var = L.build_alloca (ltype_of_typ t) s builder in
+       Hashtbl.add global_vars s global_var;
+      let e' = expr builder e in ignore (L.build_store e' global_var builder) in 
+
+      let globalvars = List.map globalstmt globals in 
+
+
   
     (* Build the code for the given statement; return the builder for
        the statement's successor *)
