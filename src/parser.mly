@@ -51,9 +51,9 @@ fdecl:
 
 bdecl:
    typ ID ASSIGN expr BUTEVERYTIME LPAREN expr RPAREN LBRACE vdecl_list stmt_list RBRACE
-     { { typ = $1;
+     { { typ = Void;
    fname = "__" ^ $2;
-   formals = $7;
+   formals = [($1,$2)];
    body = List.rev $11 } }
 
 formals_opt:
