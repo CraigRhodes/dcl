@@ -53,7 +53,7 @@ bdecl:
    typ ID ASSIGN expr BUTEVERYTIME LPAREN expr RPAREN LBRACE stmt_list RBRACE
      { (GlobalAssign($1, $2, $4), { typ = Void;
    fname = "__" ^ $2;
-   formals = [];
+   formals = [($1, $2)];
    body = If($7, Block([]), Return Noexpr) :: (List.rev $10) }) }
 
 formals_opt:

@@ -1,3 +1,5 @@
+int n = 2;
+
 int x = 5 buteverytime (x == 2) {
 	print_int(1);
 	x = 5;

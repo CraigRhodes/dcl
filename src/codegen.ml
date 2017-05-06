@@ -271,7 +271,14 @@ let translate (globals, functions) =
        the statement's successor *)
     let rec stmt builder = function
   A.Block sl -> List.fold_left stmt builder sl
-      | A.Expr e -> ignore (expr builder e); builder
+      | A.Expr e -> ignore (expr builder e); 
+                    ignore (if String.sub fdecl.A.fname 0 2 = "__" then () (* Don't generate calls to callback *) 
+                            else (let (fdef, _) = StringMap.find "__x" function_decls in (* Generate a list of fnames starting with __ *)
+                let actuals = [lookup "n"] in
+                let result = "" in
+                ignore ( L.build_call fdef (Array.of_list actuals) result builder ) 
+              ) (*ignore (StringMap.filter (fun key v -> key = "__") function_decls)*) (* REPLACE THIS () WITH CODE TO CALL ALL CALLBACKS *)
+                     ) ; builder
       | A.Return e -> ignore (match fdecl.A.typ with
     A.Void -> L.build_ret_void builder
   | _ -> L.build_ret (expr builder e) builder); builder
