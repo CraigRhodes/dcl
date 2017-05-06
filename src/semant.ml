@@ -30,6 +30,14 @@ let check (globals, functions) =
     | _ -> ()
   in
 
+  let report_local_duplicate exceptf s =
+      if Hashtbl.mem symbols s then raise (Failure (exceptf s));
+  in
+
+  let report_global_duplicate exceptf s =
+      if Hashtbl.mem globalsymbols s then raise (Failure (exceptf s));
+  in
+
   let check_var_void exceptf t n = 
       if t == Void then raise (Failure (exceptf n)) 
   in
@@ -199,8 +207,8 @@ let check (globals, functions) =
              " = " ^ string_of_typ rt ^ " in " ^ 
              string_of_expr ex))
       | LocalAssign (t, s, e) as ex -> check_var_void (fun n -> "illegal void local " ^ n ^
-      " in " ^ func.fname) t s; let lt = t
-                                and rt = expr e in
+      " in " ^ func.fname) t s; report_local_duplicate (fun n -> "duplicate local " ^ n ^ " in " ^ func.fname) s;
+      let lt = t and rt = expr e in
         check_assign lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
              " = " ^ string_of_typ rt ^ " in " ^ 
              string_of_expr ex)); Hashtbl.add symbols s t; t
@@ -223,9 +231,12 @@ let check (globals, functions) =
 
     
     let globalstmt = function 
-       Global(t,s) as ex -> check_var_void (fun n -> "illegal void global: " ^ n) t s; Hashtbl.add globalsymbols s t;
-     | GlobalAssign(t,s,e) as ex -> check_var_void (fun n -> "illegal void global: " ^ n) t s; let lt = t
-                                and rt = expr e in
+       Global(t,s) as ex -> check_var_void (fun n -> "illegal void global " ^ n) t s; 
+       report_global_duplicate (fun n -> "duplicate global " ^ n) s;
+       Hashtbl.add globalsymbols s t;
+     | GlobalAssign(t,s,e) as ex -> check_var_void (fun n -> "illegal void global " ^ n) t s; 
+     report_global_duplicate (fun n -> "duplicate global " ^ n) s;
+     let lt = t and rt = expr e in
         check_assign lt rt (Failure ("illegal global assignment " ^ string_of_typ lt ^
              " = " ^ string_of_typ rt ^ " in " ^ 
              string_of_globalstmt ex)); Hashtbl.add globalsymbols s t in 
@@ -242,7 +253,8 @@ let check (globals, functions) =
         in check_block sl
       | Expr e -> ignore (expr e)
       | Local (t, s) as ex -> check_var_void (fun n -> "illegal void local " ^ n ^
-      " in " ^ func.fname) t s; ignore(Hashtbl.add symbols s t);
+      " in " ^ func.fname) t s; report_local_duplicate (fun n -> "duplicate local " ^ n ^ " in " ^ func.fname) s;
+      ignore(Hashtbl.add symbols s t);
       | Return e -> let t = expr e in if t = func.typ then () else
          raise (Failure ("return gives " ^ string_of_typ t ^ " expected " ^
                          string_of_typ func.typ ^ " in " ^ string_of_expr e))
