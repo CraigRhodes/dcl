@@ -240,7 +240,7 @@ let check (globals, functions) =
         check_assign lt rt (Failure ("illegal global assignment " ^ string_of_typ lt ^
              " = " ^ string_of_typ rt ^ " in " ^ 
              string_of_globalstmt ex)); Hashtbl.add globalsymbols s t in 
-        let globalvars = List.map globalstmt globals in 
+        Hashtbl.clear globalsymbols; let globalvars = List.map globalstmt globals in 
 
     (* Verify a statement or throw an exception *)
     let rec stmt = function
