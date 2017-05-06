@@ -48,6 +48,20 @@ let translate (globals, functions) =
     | A.Void -> void_t in
 
   (* Declare each global variable; remember its value in a map *)
+  let add_global t s =
+      let init = (match t with 
+                    A.Int            -> L.const_int          (ltype_of_typ t) 0 
+                  | A.Double         -> L.const_float        (ltype_of_typ t) 0.
+                  | A.Bool           -> L.const_int          (ltype_of_typ t) 0
+                  | _ (* A.String *) -> L.const_string       context ""
+                )
+      in Hashtbl.add global_vars s (L.define_global s init the_module) in 
+
+      let globalstmt = function
+    A.Global(t,s) -> add_global t s
+  | A.GlobalAssign(t,s,e) -> add_global t s in 
+
+      let globalvars = List.map globalstmt globals in 
 
   (* Declare printf(), which the print built-in function will call *)
   let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
@@ -245,21 +259,11 @@ let translate (globals, functions) =
   Some _ -> ()
       | None -> ignore (f builder) in
 
-    let add_global t s =
-      let init = (match t with 
-                    A.Int            -> L.const_int          (ltype_of_typ t) 0 
-                  | A.Double         -> L.const_float        (ltype_of_typ t) 0.
-                  | A.Bool           -> L.const_int          (ltype_of_typ t) 0
-                  | _ (* A.String *) -> L.const_string       context ""
-                )
-      in Hashtbl.add global_vars s (L.define_global s init the_module) in 
+      let globalstmtFunc = function
+    A.Global(t,s) -> ()
+  | A.GlobalAssign(t,s,e) -> let e' = expr builder e in ignore (L.build_store e' (lookup s) builder) in 
 
-      let globalstmt = function
-    A.Global(t,s) -> add_global t s; 
-  | A.GlobalAssign(t,s,e) -> add_global t s;
-      let e' = expr builder e in ignore (L.build_store e' (lookup s) builder) in 
-
-      let globalvars = List.map globalstmt globals in 
+      let globalvars = List.map globalstmtFunc globals in 
 
 
   
