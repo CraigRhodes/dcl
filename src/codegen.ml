@@ -100,6 +100,7 @@ let translate (globals, functions) =
   let malloc_t = L.function_type ptr_t [| i32_t |] in
   let malloc_func = L.declare_function "malloc" malloc_t the_module in
 
+  
 
   (* Define each function (arguments and return type) so we can call it *)
   let function_decls = 
@@ -216,6 +217,7 @@ let translate (globals, functions) =
       | A.Call ("print_int", [e])  -> L.build_call printf_func [| int_format_str ; expr builder e |] "print_int" builder
       | A.Call ("print_bool", [e]) -> L.build_call printf_func [| int_format_str ; expr builder e |] "print_bool" builder
       | A.Call ("print_double", [e]) -> L.build_call printf_func [| dbl_format_str ; expr builder e |] "print_double" builder
+
       | A.Call ("print_string", [e]) -> L.build_call printf_func [| str_format_str ; expr builder e |] "print_string" builder
       (* File I/O calls *)
       | A.Call("bopen", e) ->
@@ -269,14 +271,7 @@ let translate (globals, functions) =
        the statement's successor *)
     let rec stmt builder = function
   A.Block sl -> List.fold_left stmt builder sl
-      | A.Expr e -> ignore (expr builder e); 
-                    ignore (if String.sub fdecl.A.fname 0 2 = "__" then () (* Don't generate calls to callback *) 
-                            else (let (fdef, _) = StringMap.find "__x" function_decls in (* Generate a list of fnames starting with __ *)
-                let actuals = [] in
-                let result = "" in
-                ignore ( L.build_call fdef (Array.of_list actuals) result builder ) 
-              ) (*ignore (StringMap.filter (fun key v -> key = "__") function_decls)*) (* REPLACE THIS () WITH CODE TO CALL ALL CALLBACKS *)
-                     ) ; builder
+      | A.Expr e -> ignore (expr builder e); builder
       | A.Return e -> ignore (match fdecl.A.typ with
     A.Void -> L.build_ret_void builder
   | _ -> L.build_ret (expr builder e) builder); builder
