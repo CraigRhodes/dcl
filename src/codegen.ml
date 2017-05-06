@@ -25,10 +25,13 @@ module StringMap = Map.Make(String)
 
 let local_vars:(string, llvalue) Hashtbl.t = Hashtbl.create 100 
 let global_vars:(string, llvalue) Hashtbl.t = Hashtbl.create 100
+let expr_store_local:(string, llvalue) Hashtbl.t = Hashtbl.create 100
+let expr_store_global:(string, llvalue) Hashtbl.t = Hashtbl.create 100
 
 let translate (globals, functions) =
   let context = L.global_context () in
-  let the_module = L.create_module context "DCL"
+  let the_module = L.create_module context "DCL" in 
+  let globalbuilder = builder context 
   and i32_t  = L.i32_type    context
   and i8_t   = L.i8_type     context
   and i1_t   = L.i1_type     context
@@ -48,6 +51,25 @@ let translate (globals, functions) =
     | A.Void -> void_t in
 
   (* Declare each global variable; remember its value in a map *)
+  let lookupglobal n = try Hashtbl.find global_vars n 
+                       with Not_found -> raise (Failure ("undeclared id: " ^ n ))
+
+    in
+  let build_string_from_code_global e' = let size = L.operand (L.size_of (L.type_of e')) 1 in
+                                    let dest = L.build_array_malloc i8_t size "tmp" globalbuilder in
+                                    List.iter (fun x -> 
+                                      let more = (L.build_gep dest  [| L.const_int i32_t x |] "tmp2" globalbuilder) in
+                                      let x = L.build_extractvalue e' x "tmp2" globalbuilder in
+                                      ignore (L.build_store x more globalbuilder)
+                                    ) (int_range ((match (L.int64_of_const size) with Some i -> Int64.to_int i) - 1)) ;
+                                    L.build_in_bounds_gep dest [| L.const_int i32_t 0 |] "whatever" globalbuilder in
+
+  let globalexpr = function
+        A.IntLiteral i -> L.const_int i32_t i
+      | A.BoolLiteral b -> L.const_int i1_t (if b then 1 else 0)
+      | A.DblLiteral d -> L.const_float f64_t d
+      | A.StrLiteral s -> build_string_from_code_global (L.const_string context s) in 
+
   let add_global t s =
       let init = (match t with 
                     A.Int            -> L.const_int          (ltype_of_typ t) 0 
@@ -59,7 +81,7 @@ let translate (globals, functions) =
 
       let globalstmt = function
     A.Global(t,s) -> add_global t s
-  | A.GlobalAssign(t,s,e) -> add_global t s in 
+  | A.GlobalAssign(t,s,e) -> add_global t s; let e' = globalexpr e in ignore (Hashtbl.add expr_store_global s e') in 
 
       let globalvars = List.map globalstmt globals in 
 
@@ -149,13 +171,16 @@ let translate (globals, functions) =
                                       ignore (L.build_store x more builder)
                                     ) (int_range ((match (L.int64_of_const size) with Some i -> Int64.to_int i) - 1)) ;
                                     L.build_in_bounds_gep dest [| L.const_int i32_t 0 |] "whatever" builder in
+
     let clean_up_string_stuff dest = L.build_free dest builder in
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
         A.IntLiteral i -> L.const_int i32_t i
       | A.BoolLiteral b -> L.const_int i1_t (if b then 1 else 0)
       | A.DblLiteral d -> L.const_float f64_t d
-      | A.Id s -> L.build_load (lookup s) s builder
+      | A.Id s -> if Hashtbl.mem expr_store_local s then Hashtbl.find expr_store_local s
+                  else if Hashtbl.mem expr_store_global s then Hashtbl.find expr_store_global s
+                  else raise (Failure ("undeclared id: " ^ s )) 
       | A.StrLiteral s -> build_string_from_code (L.const_string context s)
       | A.Noexpr -> L.const_int i32_t 0
       | A.Binop (e1, op, e2) ->
@@ -209,11 +234,14 @@ let translate (globals, functions) =
     (match op with
             A.Neg     -> if L.type_of e' == ltype_of_typ A.Int then L.build_neg else L.build_fneg
           | A.Not     -> L.build_not) e' "tmp" builder
-      | A.Assign (s, e) -> let e' = expr builder e in
-                     ignore (L.build_store e' (lookup s) builder); e'
+      | A.Assign (s, e) -> if Hashtbl.mem local_vars s then let e' = expr builder e in
+                     ignore (Hashtbl.add expr_store_local s e'); e'
+                  else if Hashtbl.mem global_vars s then let e' = globalexpr e in ignore (Hashtbl.add expr_store_global s e'); expr builder e
+                  else raise (Failure ("undeclared id: " ^ s )) 
+
       | A.LocalAssign (t, s, e) -> let local_var = L.build_alloca (ltype_of_typ t) s builder in
        Hashtbl.add local_vars s local_var;
-      let e' = expr builder e in ignore (L.build_store e' local_var builder); e'
+      let e' = expr builder e in ignore (Hashtbl.add expr_store_local s e'); e'
       | A.Call ("print_int", [e])  -> L.build_call printf_func [| int_format_str ; expr builder e |] "print_int" builder
       | A.Call ("print_bool", [e]) -> L.build_call printf_func [| int_format_str ; expr builder e |] "print_bool" builder
       | A.Call ("print_double", [e]) -> L.build_call printf_func [| dbl_format_str ; expr builder e |] "print_double" builder
@@ -258,14 +286,6 @@ let translate (globals, functions) =
       match L.block_terminator (L.insertion_block builder) with
   Some _ -> ()
       | None -> ignore (f builder) in
-
-      let globalstmtFunc = function
-    A.Global(t,s) -> ()
-  | A.GlobalAssign(t,s,e) -> let e' = expr builder e in ignore (L.build_store e' (lookup s) builder) in 
-
-      let globalvars = List.map globalstmtFunc globals in 
-
-
   
     (* Build the code for the given statement; return the builder for
        the statement's successor *)
