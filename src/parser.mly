@@ -7,7 +7,7 @@ open Ast
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE EXPONT ASSIGN NOT
-%token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
+%token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR BUTEVERYTIME
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID DOUBLE STRING 
 %token <int> INTLITERAL
 %token <float> DBLLITERAL
@@ -39,6 +39,7 @@ program:
 decls:
    /* nothing */ { [], [] }
  | decls globalstmt { ($2 :: fst $1), snd $1 }
+ | decls bdecl { fst $2 :: fst $1, (snd $2 :: snd $1) }
  | decls fdecl { fst $1, ($2 :: snd $1) }
 
 fdecl:
@@ -48,6 +49,13 @@ fdecl:
 	 formals = $4;
 	 body = List.rev $7 } }
 
+bdecl:
+   typ ID ASSIGN expr BUTEVERYTIME LPAREN expr RPAREN LBRACE stmt_list RBRACE
+     { (GlobalAssign($1, $2, $4), { typ = Void;
+   fname = "__" ^ $2;
+   formals = [];
+   body = If($7, Block([]), Return Noexpr) :: (List.rev $10) }) }
+
 formals_opt:
     /* nothing */ { [] }
   | formal_list   { List.rev $1 }
@@ -55,8 +63,6 @@ formals_opt:
 formal_list:
     typ ID                   { [($1,$2)] }
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
-
-
 
 typ:
     INT { Int }
