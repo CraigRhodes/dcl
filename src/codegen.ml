@@ -300,8 +300,10 @@ let translate (globals, functions) =
     let rec stmt builder = function
   A.Block sl -> List.fold_left stmt builder sl
       | A.Expr e -> ignore (expr builder e); ignore (if String.sub fdecl.A.fname 0 2 = "__" then () (* Don't generate calls to callback *) 
-                            else (let (fdef, _) = StringMap.find "__x" function_decls in (* Generate a list of fnames starting with __ *)
-                let actuals = [findValue "n"] in
+                            else (let (fdef, fdec) = StringMap.find "__x" function_decls in (* Generate a list of fnames starting with __ *)
+                let newStr = String.create ((String.length fdec.A.fname) - 2) in 
+                let varName = ignore(for i = 0 to ((String.length newStr) - 1) do String.set newStr i (String.get fdec.A.fname (i + 2)) done); newStr in
+                let actuals = [(findValue varName)] in
                 let result = "" in
                 ignore ( L.build_call fdef (Array.of_list actuals) result builder ) 
               ) (*ignore (StringMap.filter (fun key v -> key = "__") function_decls)*) (* REPLACE THIS () WITH CODE TO CALL ALL CALLBACKS *)
