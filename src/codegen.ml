@@ -299,15 +299,20 @@ let translate (globals, functions) =
        the statement's successor *)
     let rec stmt builder = function
   A.Block sl -> List.fold_left stmt builder sl
-      | A.Expr e -> ignore (expr builder e); ignore (if String.sub fdecl.A.fname 0 2 = "__" then () (* Don't generate calls to callback *) 
-                            else (let (fdef, fdec) = StringMap.find "__x" function_decls in (* Generate a list of fnames starting with __ *)
-                let newStr = String.create ((String.length fdec.A.fname) - 2) in 
-                let varName = ignore(for i = 0 to ((String.length newStr) - 1) do String.set newStr i (String.get fdec.A.fname (i + 2)) done); newStr in
-                let actuals = [(findValue varName)] in
-                let result = "" in
-                ignore ( L.build_call fdef (Array.of_list actuals) result builder ) 
-              ) (*ignore (StringMap.filter (fun key v -> key = "__") function_decls)*) (* REPLACE THIS () WITH CODE TO CALL ALL CALLBACKS *)
-                     ) ;
+      | A.Expr e -> ignore (expr builder e); ignore (if String.sub fdecl.A.fname 0 2 = "__" then () (* Don't generate calls to callback within a callback *) 
+                    else (
+                      let callbackStrMap = StringMap.filter (let x k v = (String.sub k 0 2) = "__" in x ) function_decls in 
+                      let callbackList = StringMap.bindings callbackStrMap in
+                      for j = 0 to ((List.length callbackList) - 1) do
+                        let (key, (fdef, fdec)) = List.nth callbackList j in 
+                        let newStr = String.create ((String.length fdec.A.fname) - 2) in 
+                        let varName = ignore(for i = 0 to ((String.length newStr) - 1) do String.set newStr i (String.get fdec.A.fname (i + 2)) done); newStr in
+                        let actuals = [(findValue varName)] in
+                        let result = "" in
+                        ignore ( L.build_call fdef (Array.of_list actuals) result builder ) 
+                      done
+                    ) 
+              ) ;
                     builder
       | A.Return e -> ignore (match fdecl.A.typ with
     A.Void -> L.build_ret_void builder
