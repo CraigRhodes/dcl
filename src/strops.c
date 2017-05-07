@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-char * add_str(char *x, char *y)
+char * __add_str(char *x, char *y)
 {
 	int total_length = strlen(x) + strlen(y) + 1;
 	char *result = (char *) malloc(total_length);
@@ -14,7 +14,7 @@ char * add_str(char *x, char *y)
 #ifdef BUILD_TEST
 int main()
 {
-  printf("\"swe\" + \"et!\" == \"%s\"\n", add_str("swe", "et!"));
+  printf("\"swe\" + \"et!\" == \"%s\"\n", __add_str("swe", "et!"));
   return 0;
 }
 #endif

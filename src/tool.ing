@@ -1,3 +1,4 @@
+./dcl.native < float.dcl > float.ll
 llc < float.ll > float.s
 cc -o float float.s printbig.o exp.o -lm
 ./float
