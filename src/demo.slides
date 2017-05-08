@@ -1,0 +1,8 @@
+1. Code for Demo
+2. Terminal Output of Demo Working (head -c 1000 bee_movie_script.txt ; run demo.dcl ; head -c 1000 b++_movie_script.txt)
+3. You got bee'd!
+4. Same as 1 but with list of features shown in right corner
+5. Same as 4 but all gray but things corresponding to feature 1 are in that color
+6. Same as 4 but all gray but things corresponding to feature 2 are in that color
+7. Same as 4 but all gray but things corresponding to feature 3 are in that color
+...

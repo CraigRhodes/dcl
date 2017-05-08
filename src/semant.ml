@@ -44,9 +44,19 @@ let check (globals, functions) =
   
   (* Raise an exception of the given rvalue type cannot be assigned to
      the given lvalue type *)
-  let check_assign lvaluet rvaluet err =
-     if lvaluet == rvaluet then lvaluet else raise err
-  in 
+  let check_type lvaluet rvaluet err =
+     (*let _ = print_endline (string_of_typ lvaluet) in
+     let _ = print_endline (string_of_typ rvaluet) in
+     let _ = print_endline (string_of_bool(string_of_typ lvaluet == string_of_typ rvaluet)) in
+     let _ = print_int (String.length (string_of_typ lvaluet)) in
+     let _ = print_int (String.length (string_of_typ rvaluet)) in
+     let _ = print_int (String.compare (string_of_typ lvaluet) (string_of_typ rvaluet)) in*)
+
+     (* See if = could be used :O *)
+     if (String.compare (string_of_typ lvaluet) (string_of_typ rvaluet)) == 0 then lvaluet else raise err 
+  in
+   
+  (**** Checking Global Variables ****)
 
    let type_of_identifier s =
       try Hashtbl.find symbols s
@@ -58,8 +68,8 @@ let check (globals, functions) =
 
   (**** Checking Functions ****)
 
-  if List.mem "print_int" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function print_int may not be defined")) else ();
+  if List.mem "print" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function print may not be defined")) else ();
 
   if List.mem "print_bool" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function print_bool may not be defined")) else ();
@@ -96,6 +106,9 @@ let check (globals, functions) =
 
   if List.mem "free" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function free may not be defined")) else ();
+  
+  if List.mem "print_line" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function print_line may not be defined")) else ();
 
   report_duplicate (fun n -> "duplicate function " ^ n)
     (List.map (fun fd -> fd.fname) functions);
@@ -103,37 +116,37 @@ let check (globals, functions) =
   (* Function declaration for a named function *)
   let built_in_decls =  
     StringMap.add "free" 
-    { typ = Void; fname = "free"; formals = [(String, "tofree")]; body = [] }
+    { typ = Void; fname = "free"; formals = [(Simple(String), "tofree")]; body = [] }
     (StringMap. add "malloc"
-     { typ = String; fname = "malloc"; formals = [(Int, "size")]; body = [] }
+     { typ = Simple(String); fname = "malloc"; formals = [(Simple(Int), "size")]; body = [] }
       (StringMap.add "bwrite"
-        { typ = Int; fname = "bwrite"; formals = [(Int, "fd"); (String, "buf"); (Int, "count")]; body = []}
+        { typ = Simple(Int); fname = "bwrite"; formals = [(Simple(Int), "fd"); (Simple(String), "buf"); (Simple(Int), "count")]; body = []}
       (StringMap.add "bread"
-         { typ = Int; fname = "bread"; formals = [(Int, "fd"); (String, "buf"); (Int, "count")];  body = [] }
+         { typ = Simple(Int); fname = "bread"; formals = [(Simple(Int), "fd"); (Simple(String), "buf"); (Simple(Int), "count")];  body = [] }
       (
       StringMap.add "bclose"  (* key *)
-       { typ = Int; fname = "bclose"; formals = [(Int, "fd")]; body = [] }
+       { typ = Simple(Int); fname = "bclose"; formals = [(Simple(Int), "fd")]; body = [] }
       ( 
       StringMap.add "bopen"  (* key *)
-       { typ = Int; fname = "bopen"; formals = [(String, "name"); (Int, "flags"); (Int, "mode")];
+       { typ = Simple(Int); fname = "bopen"; formals = [(Simple(String), "name"); (Simple(Int), "flags"); (Simple(Int), "mode")];
          body = [] } (* value *)
 
       (StringMap.add "print_double"  (* key *)
-       { typ = Void; fname = "print"; formals = [(Double, "x")];
+       { typ = Void; fname = "print"; formals = [(Simple(Double), "x")];
          body = [] } (* value *)
        
        (StringMap.add "print_int" 
-        { typ = Void; fname = "print"; formals = [(Int, "x")];
+        { typ = Void; fname = "print"; formals = [(Simple(Int), "x")];
           body = [] }
 
         (StringMap.add "print_bool"
-        { typ = Void; fname = "printb"; formals = [(Bool, "x")];
+        { typ = Void; fname = "printb"; formals = [(Simple(Bool), "x")];
           body = [] }
 
 
         (StringMap.singleton "print_string"
         
-         { typ = String; fname = "print_string"; formals = [(String, "x")];
+         { typ = Simple(String); fname = "print_string"; formals = [(Simple(String), "x")];
            body = [] })
 
       ) )))))))
@@ -166,26 +179,45 @@ let check (globals, functions) =
     in
 
     let rec expr = function
-  IntLiteral _ -> Int 
-      | DblLiteral _ -> Double
-      | StrLiteral _ -> String
-      | BoolLiteral _ -> Bool
+	    IntLiteral _ -> Simple(Int)
+      | DblLiteral _ -> Simple(Double)
+      | StrLiteral _ -> Simple(String)
+      | BoolLiteral _ -> Simple(Bool)
+      | ArrLiteral(l) -> let first_type = expr (List.hd l) in
+                         let _ = (match first_type with 
+                                    Simple _ -> ()
+                                  | _ -> raise (Failure ("'" ^ string_of_expr (List.hd l) ^ "' is not simple and is in array"))
+                                 ) in
+                         let _ = List.iter (fun x -> if string_of_typ(expr x) == string_of_typ first_type then ()
+                                                     else raise (Failure ("'" ^ string_of_expr x ^ "' doesn't match array's type"))) l in
+                         Array((match first_type with Simple(x) -> x), 1)
+      | DefaultArrLiteral(e1, e2) -> if string_of_typ (expr e1) == string_of_typ(Simple(Int))
+                                     then (match expr e2 with
+                                               Simple(t) -> Array(t, 1)
+                                             | _ -> raise (Failure ("'" ^ string_of_expr e2 ^ "' is not a simple type")))
+                                     else raise (Failure ("'" ^ string_of_expr e1 ^ "' is not an integer"))
+      | Index(a, i) -> if string_of_typ(expr (List.hd i)) != string_of_typ(Simple(Int))
+                       then raise ( Failure("Array index ('" ^ string_of_expr (List.hd i) ^ "') is not an integer") )
+                       else 
+                         let type_of_entity = expr a in
+                         (match type_of_entity with
+                            Array(d, _) -> Simple(d)
+                          | Simple(String) -> Simple(String)
+                          | _ -> raise (Failure ("Entity being indexed ('" ^ string_of_expr a ^"') cannot be array")))
       | Id s -> type_of_identifier s
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
-  (match op with
-        Equal | Neq when t1 = t2 -> Bool
-
-        |  Add | Sub | Mult | Div when t1 = Int && t2 = Int -> Int
-        | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Bool
-        | And  | Or when t1 = Bool && t2 = Bool -> Bool
-        | Exp when t1 = Int && t2 = Int -> Double
-
-        | Add | Sub | Mult | Div | Exp when t1 = Double && t2 = Double -> Double
+	(match op with
+        Equal | Neq when t1 = t2 -> Simple(Bool)
+        |  Add | Sub | Mult | Div when t1 = Simple(Int) && t2 = Simple(Int) -> Simple(Int)
+	      | Less | Leq | Greater | Geq when t1 = Simple(Int) && t2 = Simple(Int) -> Simple(Bool)
+	      | And  | Or when t1 = Simple(Bool) && t2 = Simple(Bool) -> Simple(Bool)
+        | Exp when t1 = Simple(Int) && t2 = Simple(Int) -> Simple(Double)
+        | Add | Sub | Mult | Div | Exp when t1 = Simple(Double) && t2 = Simple(Double) -> Simple(Double)
         | Less | Leq | Greater | Geq 
-        when t1 = Double && t2 = Double -> Int
+        when t1 = Simple(Double) && t2 = Simple(Double) -> Simple(Int)
 
-        | Add when t1 = String && t2 = String -> String 
-        | Less | Leq | Greater | Geq when t1 = String && t2 = String -> Int
+        | Add when t1 = Simple(String) && t2 = Simple(String) -> Simple(String) 
+        | Less | Leq | Greater | Geq when t1 = Simple(String) && t2 = Simple(String) -> Simple(Int)
         
         | _ -> raise (Failure ("illegal binary operator " ^
               string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
@@ -193,39 +225,66 @@ let check (globals, functions) =
         )
       | Unop(op, e) as ex -> let t = expr e in
    (match op with
-     Neg when t = Int -> Int
-   | Not when t = Bool -> Bool
-
-   | Neg when t = Double -> Double
-
-         | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
-           string_of_typ t ^ " in " ^ string_of_expr ex)))
+	   Neg when t = Simple(Int) -> Simple(Int)
+   	| Not when t = Simple(Bool) -> Simple(Bool)
+	 | Not when t = Simple(Int) -> Simple(Int)
+   | Neg when t = Simple(Double) -> Simple(Double)
+   | Length when t = Simple(String) -> Simple(Int)
+   | Length when t = Array(Double, 1) -> Simple(Int)
+   | Length when t = Array(String, 1) -> Simple(Int)
+   | Length when t = Array(Int, 1) -> Simple(Int)
+   | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
+	  		   string_of_typ t ^ " in " ^ string_of_expr ex)))
       | Noexpr -> Void
       | Assign(var, e) as ex -> let lt = type_of_identifier var
                                 and rt = expr e in
-        check_assign lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
+        check_type lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
              " = " ^ string_of_typ rt ^ " in " ^ 
              string_of_expr ex))
+	  | ArrayAssign(v, i, e) as ex -> let type_of_left_side = 
+                                      if string_of_typ(expr (List.hd i)) != string_of_typ(Simple(Int))
+                                      then raise ( Failure("Array index ('" ^ string_of_expr (List.hd i) ^ "') is not an integer") )
+                                      else 
+                                        let type_of_entity = type_of_identifier v in
+                                        (match type_of_entity with
+                                           Array(d, _) -> Simple(d)
+                                         | _ -> raise (Failure ("Entity being indexed ('" ^ v ^"') cannot be array"))) in
+                                      let type_of_right_side = expr e in
+                                      check_type type_of_left_side type_of_right_side 
+                                      (Failure ("illegal assignment " ^ string_of_typ type_of_left_side ^
+                                                " = " ^ string_of_typ type_of_right_side ^ " in " ^ 
+                                                string_of_expr ex))
       | LocalAssign (t, s, e) as ex -> check_var_void (fun n -> "illegal void local " ^ n ^
       " in " ^ func.fname) t s; report_local_duplicate (fun n -> "duplicate local " ^ n ^ " in " ^ func.fname) s;
       let lt = t and rt = expr e in
-        check_assign lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
+        check_type lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
              " = " ^ string_of_typ rt ^ " in " ^ 
              string_of_expr ex)); Hashtbl.add symbols s t; t
-      | Call(fname, actuals) as call -> let fd = function_decl fname in
-         if List.length actuals != List.length fd.formals then
-           raise (Failure ("expecting " ^ string_of_int
-             (List.length fd.formals) ^ " arguments in " ^ string_of_expr call))
-         else
-           List.iter2 (fun (ft, _) e -> let et = expr e in
-              ignore (check_assign ft et
-                (Failure ("illegal actual argument found " ^ string_of_typ et ^
-                " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e))))
-             fd.formals actuals;
-           fd.typ
+      | Call(fname, actuals) as call -> 
+         if fname = "print" || fname = "print_line" 
+         then (if List.length actuals == 1 
+               then let arg_type = string_of_typ (expr (List.hd actuals)) in
+                    if arg_type = string_of_typ (Simple(Int)) || 
+			arg_type = string_of_typ (Simple(Bool)) ||
+                       arg_type = string_of_typ (Simple(Double)) ||
+                       arg_type = string_of_typ (Simple(String)) 
+                    then Void
+                    else raise (Failure ("illegal actual argument found " ^ string_of_typ (expr (List.hd actuals)) ^
+                                                      " in " ^ string_of_expr (List.hd actuals)))
+               else raise (Failure ("expecting 1 argument in " ^ string_of_expr call)))
+         else (let fd = function_decl fname in
+               if List.length actuals != List.length fd.formals then
+                 raise (Failure ("expecting " ^ string_of_int
+                   (List.length fd.formals) ^ " arguments in " ^ string_of_expr call))
+               else List.iter2 (fun (ft, _) e -> let et = expr e in
+                       ignore (check_type ft et
+                         (Failure ("illegal actual argument found " ^ string_of_typ et ^
+                         " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e))))
+                      fd.formals actuals;
+                    fd.typ)
     in
 
-    let check_bool_expr e = if expr e != Bool
+    let check_bool_expr e = if string_of_typ (expr e) != string_of_typ (Simple(Bool))
      then raise (Failure ("expected Bool expression in " ^ string_of_expr e))
      else () in
 
@@ -237,7 +296,7 @@ let check (globals, functions) =
      | GlobalAssign(t,s,e) as ex -> check_var_void (fun n -> "illegal void global " ^ n) t s; 
      report_global_duplicate (fun n -> "duplicate global " ^ n) s;
      let lt = t and rt = expr e in
-        check_assign lt rt (Failure ("illegal global assignment " ^ string_of_typ lt ^
+        check_type lt rt (Failure ("illegal global assignment " ^ string_of_typ lt ^
              " = " ^ string_of_typ rt ^ " in " ^ 
              string_of_globalstmt ex)); Hashtbl.add globalsymbols s t in 
         Hashtbl.clear globalsymbols; let globalvars = List.map globalstmt globals in 

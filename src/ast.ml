@@ -2,24 +2,35 @@
 
 
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-          And | Or  | Exp
+          And | Or  | Exp 
 
-type uop = Neg | Not
+type uop = Neg | Not | Length
 
-type typ = Int | Void | Double | String | Bool
+type dtyp = Int | Double | String | Bool
+
+type typ = Simple of dtyp | Void | Array of dtyp * int
 
 type bind = typ * string
 
+(*type arr_literals = 
+    ArrLiteral of expr list
+  | MultiArrLiteral of arr_literals list *)
 
 type expr =
+  (* arr_literals
+  |*) 
     IntLiteral of int
   | BoolLiteral of bool
-  | DblLiteral of float
+  | DblLiteral of float 
   | StrLiteral of string
+  | ArrLiteral of expr list 
+  | DefaultArrLiteral of expr * expr 
+  | Index of expr * expr list
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
+  | ArrayAssign of string * expr list * expr
   | Call of string * expr list
   | Noexpr
   | LocalAssign of typ * string * expr
@@ -67,24 +78,45 @@ let string_of_op = function
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
+  | Length -> "#"
+
+let convert_array l conversion joiner =
+    let glob_item original data = original ^ (conversion data) ^ joiner in
+    let full = (List.fold_left glob_item "" l) in
+    "[" ^ String.sub full 0 ((String.length full) - 2) ^ "]"
+
+let string_of_d_typ = function
+    Int -> "int"
+  | Double -> "double"
+  | Bool -> "bool"
+  | String -> "string"
+
+let rec repeat c = function 
+    0 -> ""
+  | n -> c ^ (repeat c (n - 1))
 
 let string_of_typ = function
-    Int -> "int"
-  | Bool -> "bool"
-  | Double -> "double"
-  | String -> "string"
-  | Void -> "void"
+   Void -> "void"
+  |  Simple(d) -> string_of_d_typ d
+  | Array(d, n) -> string_of_d_typ d ^ repeat "[]" n
 
 let rec string_of_expr = function
     IntLiteral(l) -> string_of_int l
   | BoolLiteral(true) -> "true"
   | BoolLiteral(false) -> "false"
   | DblLiteral(l) -> string_of_float l
-  | StrLiteral(l) -> l
+  | StrLiteral(l) -> "\"" ^ l ^ "\""
+  | ArrLiteral(l) -> convert_array l string_of_expr ", "
+(*  | MultiArrLiteral(l) -> convert_array l string_of_expr ",\n" *)
+  | DefaultArrLiteral(e1, e2) -> "[" ^ string_of_expr e1 ^ " of " ^ string_of_expr e2 ^ "]"
   | Id(s) -> s
+  | Index(e, l) -> string_of_expr e ^ 
+                   (*convert_array l (fun e -> "[" ^ string_of_expr e ^ "]") ""*)
+                   "{|" ^ string_of_expr (List.hd l) ^ "|}"
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
+  | ArrayAssign(v, l, e) -> v ^ "[" ^ string_of_expr (List.hd l) ^ "]" ^ " = " ^ string_of_expr e
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
@@ -105,7 +137,6 @@ let rec string_of_stmt = function
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
   | Local(t, s) -> string_of_typ t ^ " " ^ s ^ ";\n"
-
 
 let string_of_globalstmt = function 
     Global(t,s) -> string_of_typ t ^ " " ^ s ^ ";\n"

@@ -1,20 +1,22 @@
 int x = 2 buteverytime (x == 2) {
-	print_int(x);
-	x = 6;
-	print_int(x);
+	print_line(x);
+	print_line(10);
+	print_line("Hello");
 }
 
-int y = 0 buteverytime (y == 1) {
-	print_int(10);
+int y = 2 buteverytime (y == 3) {
+	print_line(11);
 }
 
 int main() {
 	int n = 3;
-	y = 1;
-	print_string("hello");
-	x = 2;
-	print_int(1);
-	x = 2;
-	x = 2;
+	if (false) {
+		x = 2;
+		x = 5;
+		print_line("World");
+		x = 2;
+	}
+	y = 3;
+	x = 0;
 	return 0;
 }

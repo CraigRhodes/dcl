@@ -1,14 +1,15 @@
-/* Ocamlyacc parser for DCL */
+
 
 %{
 open Ast
 %}
 
-
+/* Ocamlyacc parser for DCL */
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE EXPONT ASSIGN NOT
-%token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR BUTEVERYTIME
-%token RETURN IF ELSE FOR WHILE INT BOOL VOID DOUBLE STRING 
+%token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR DOUBLE STRING BUTEVERYTIME
+%token RETURN IF ELSE FOR WHILE INT BOOL VOID LINDEX RINDEX
+%token LSQUARE RSQUARE OF LENGTH
 %token <int> INTLITERAL
 %token <float> DBLLITERAL
 %token <string> STRLITERAL
@@ -18,6 +19,7 @@ open Ast
 %nonassoc NOELSE
 %nonassoc ELSE
 %right ASSIGN
+%nonassoc LINDEX
 %left OR
 %left AND
 %left EQ NEQ
@@ -25,7 +27,7 @@ open Ast
 %left PLUS MINUS
 %left TIMES DIVIDE
 %right EXPONT
-%right NOT NEG
+%right NOT NEG LENGTH
 
 %start program
 %type <Ast.program> program
@@ -64,12 +66,23 @@ formal_list:
     typ ID                   { [($1,$2)] }
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
 
-typ:
+dtyp:
     INT { Int }
   | DOUBLE { Double }
   | STRING { String }
-  | VOID { Void }
   | BOOL { Bool }
+
+dim_list:
+    LSQUARE RSQUARE  { 1 }
+  | LSQUARE RSQUARE dim_list { 1 + $3 }
+
+atyp:
+    dtyp dim_list { Array($1, $2) }
+
+typ:
+    dtyp { Simple($1) }
+  | VOID { Void }
+  | atyp { $1 }
 
 globalstmt_list:
     /* nothing */    { [] }
@@ -100,12 +113,23 @@ expr_opt:
     /* nothing */ { Noexpr }
   | expr          { $1 }
 
+index:
+    LINDEX expr RINDEX { $2 }
+
+val_list:
+    expr                { [ $1 ] }
+  | expr COMMA val_list { [ $1 ] @ $3 }
+
+simple_arr_literal:
+    LSQUARE val_list RSQUARE { $2 }
+
 expr:
     INTLITERAL       { IntLiteral($1) }
   | DBLLITERAL       { DblLiteral($1) }
   | STRLITERAL       { StrLiteral($1) }
   | TRUE             {BoolLiteral(true)}
   | FALSE            {BoolLiteral(false)}
+  | simple_arr_literal { ArrLiteral($1) }
   | ID               { Id($1) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
@@ -122,8 +146,13 @@ expr:
   | expr OR     expr { Binop($1, Or,    $3) }
   | MINUS expr %prec NEG { Unop(Neg, $2) }
   | NOT expr         { Unop(Not, $2) }
+  | LENGTH expr      { Unop(Length, $2) }
   | ID ASSIGN expr   { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
+  | LSQUARE expr OF expr RSQUARE { DefaultArrLiteral($2, $4) }
+  | ID LSQUARE expr RSQUARE ASSIGN expr { ArrayAssign($1, [$3], $6) }
+  | expr index { Index($1, [$2]) }
+ /* | ID index ASSIGN expr  { Assign(Index(Id($1), $2), $4) } */
   | LPAREN expr RPAREN { $2 }
   | typ ID ASSIGN expr {LocalAssign($1, $2, $4)}
 
