@@ -63,35 +63,7 @@ let translate (globals, functions) =
                        with Not_found -> raise (Failure ("undeclared id: " ^ n ))
 
     in
-  let build_string_from_code_global e' = let size = L.operand (L.size_of (L.type_of e')) 1 in
-                                    let dest = L.build_array_malloc i8_t size "tmp" globalbuilder in
-                                    List.iter (fun x -> 
-                                      let more = (L.build_gep dest  [| L.const_int i32_t x |] "tmp2" globalbuilder) in
-                                      let x = L.build_extractvalue e' x "tmp2" globalbuilder in
-                                      ignore (L.build_store x more globalbuilder)
-                                    ) (int_range ((match (L.int64_of_const size) with Some i -> Int64.to_int i) - 1)) ;
-                                    L.build_in_bounds_gep dest [| L.const_int i32_t 0 |] "whatever" globalbuilder in
 
-  let globalexpr = function
-        A.IntLiteral i -> L.const_int i32_t i
-      | A.BoolLiteral b -> L.const_int i1_t (if b then 1 else 0)
-      | A.DblLiteral d -> L.const_float f64_t d
-      | A.StrLiteral s -> build_string_from_code_global (L.const_string context s) in 
-
-  let add_global t s =
-      let init = (match t with 
-                    A.Simple(A.Int)           -> L.const_int          (ltype_of_typ t) 0 
-                  | A.Simple(A.Double)         -> L.const_float        (ltype_of_typ t) 0.
-                  | A.Simple(A.Bool)         -> L.const_int          (ltype_of_typ t) 0
-                  | _ (* A.String *) -> L.const_string       context ""
-                )
-      in Hashtbl.add global_vars s (L.define_global s init the_module) in 
-
-      let globalstmt = function
-    A.Global(t,s) -> add_global t s
-  | A.GlobalAssign(t,s,e) -> add_global t s in 
-
-      let globalvars = List.map globalstmt globals in 
 
   (* Declare printf(), which the print built-in function will call *)
   let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
@@ -471,12 +443,15 @@ let translate (globals, functions) =
   Some _ -> ()
       | None -> ignore (f builder) in
 
-    let globalstmtFunc = function
-    A.Global(t,s) -> ()
-  | A.GlobalAssign(t,s,e) -> let e' = expr builder e in 
+      let globalstmt = function
+    A.Global(t,s) -> let global_var = L.build_alloca (ltype_of_typ t) s builder in
+       Hashtbl.add global_vars s global_var;
+  | A.GlobalAssign(t,s,e) -> let global_var = L.build_alloca (ltype_of_typ t) s builder in
+       Hashtbl.add global_vars s global_var;
+       let e' = expr builder e in 
     ignore (L.build_store e' (lookup s) builder); ignore (Hashtbl.add expr_store_global s e') in 
 
-      let globalvars = List.map globalstmtFunc globals in 
+      let globalvars = List.map globalstmt globals in 
 
     let add_formal (t, n) p = L.set_value_name n p;
   let local = L.build_alloca (ltype_of_typ t) n builder in
