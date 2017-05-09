@@ -359,7 +359,7 @@ let translate (globals, functions) =
                      else 
                        let str_ptr_e1' = L.build_extractvalue e1' 1 "extract_char_array" builder in
                        let str_ptr_e2' = L.build_extractvalue e2' 1 "extract_char_array" builder in
-                       let result = L.build_call addstr_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
+                       let result = L.build_call strcmp_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
                        L.build_icmp L.Icmp.Eq result (L.const_int i32_t 0) "tmp" builder
     | A.Neq       -> if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then L.build_icmp L.Icmp.Ne e1' e2' "tmp" builder
                      else if L.type_of e1' == ltype_of_typ (A.Simple(A.Double)) then L.build_fcmp L.Fcmp.One e1' e2' "tmp" builder
