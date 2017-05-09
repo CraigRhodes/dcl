@@ -5,9 +5,9 @@ int main() {
 	int d;
 	d = 5;
 
-	print_int(a);
-	print_int(7);
-	print_int(d);
+	print_line(a);
+	print_line(7);
+	print_line(d);
 	return a;
 }
 

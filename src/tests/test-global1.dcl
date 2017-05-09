@@ -3,12 +3,12 @@ int b;
 
 void printa()
 {
-  print_int(a);
+  print_line(a);
 }
 
 void printb()
 {
-  print_int(b);
+  print_line(b);
 }
 
 void incab()

@@ -7,8 +7,8 @@ int gcd(int a, int b) {
 
 int main()
 {
-  print_int(gcd(14,21));
-  print_int(gcd(8,36));
-  print_int(gcd(99,121));
+  print_line(gcd(14,21));
+  print_line(gcd(8,36));
+  print_line(gcd(99,121));
   return 0;
 }

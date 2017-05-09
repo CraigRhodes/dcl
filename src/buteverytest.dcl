@@ -4,19 +4,20 @@ int x = 2 buteverytime (x == 2) {
 	print_line("Hello");
 }
 
-int y = 2 buteverytime (y == 3) {
+int y = 3  buteverytime (y == 2) {
 	print_line(11);
 }
 
 int main() {
 	int n = 3;
-	if (false) {
+	if ("hello" == "hello") {
 		x = 2;
 		x = 5;
 		print_line("World");
 		x = 2;
 	}
-	y = 3;
+	string s = "sdsasaa";
+	print_line(s);
 	x = 0;
 	return 0;
 }

@@ -3,7 +3,7 @@ double main() {
 	string b;
 	b = "hello";
 	a = b^2; 
-	print_double(a);
+	print_line(a);
 	return a;
 }
 

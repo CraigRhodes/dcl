@@ -23,6 +23,29 @@ char * add_str(char *x, char *y)
 	return result;
 }
 
+char * read(const char *filename) {
+  FILE *fp;
+  int len;
+  char *buffer;
+  fp = fopen(filename, "rb");
+  if(fp == NULL) {
+    perror("failed to open file");
+    exit(1);
+  }
+  fseek(fp, 0, SEEK_END);
+  len = ftell(fp);
+  buffer = malloc(sizeof(char) * (len + 1));
+  if(buffer == NULL) {
+    perror("malloc failed");
+    exit(1);
+  }
+  fseek(fp, 0, SEEK_SET);
+  fread(buffer, len, sizeof(char), fp);
+  fclose(fp);
+
+  return buffer;
+}
+
 #ifdef BUILD_TEST
 int main()
 {

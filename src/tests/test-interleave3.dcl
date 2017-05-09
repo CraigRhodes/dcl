@@ -1,5 +1,5 @@
 string hello_world() {
-	print_string("hello world!");
+	print_line("hello world!");
 	return "hello world!";
 }
 
@@ -11,7 +11,7 @@ int main() {
 	hello_world();
 	string s;
 	s = "hello world again!";
-	print_string(s);
+	print_line(s);
 
 }
 

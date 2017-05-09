@@ -8,6 +8,6 @@ void foo(int c)
 int main()
 {
   foo(73);
-  print_int(a);
+  print_line(a);
   return 0;
 }

@@ -11,6 +11,6 @@ int foo(int a)
 
 int main()
 {
-  print_int(foo(7));
+  print_line(foo(7));
   return 0;
 }

@@ -6,6 +6,6 @@ int main()
 {
   i = 42;
   j = 10;
-  print_int(i + j);
+  print_line(i + j);
   return 0;
 }

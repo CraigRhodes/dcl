@@ -122,7 +122,7 @@ let check (globals, functions) =
       (StringMap.add "bwrite"
         { typ = Simple(Int); fname = "bwrite"; formals = [(Simple(Int), "fd"); (Simple(String), "buf"); (Simple(Int), "count")]; body = []}
       (StringMap.add "bread"
-         { typ = Simple(Int); fname = "bread"; formals = [(Simple(Int), "fd"); (Simple(String), "buf"); (Simple(Int), "count")];  body = [] }
+         { typ = Simple(String); fname = "bread"; formals = [(Simple(String), "filename")];  body = [] }
       (
       StringMap.add "bclose"  (* key *)
        { typ = Simple(Int); fname = "bclose"; formals = [(Simple(Int), "fd")]; body = [] }

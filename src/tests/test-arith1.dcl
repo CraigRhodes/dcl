@@ -1,5 +1,5 @@
 int main()
 {
-  print_int(39 + 3);
+  print_line(39 + 3);
   return 0;
 }

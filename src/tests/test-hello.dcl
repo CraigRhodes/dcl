@@ -1,7 +1,7 @@
 int main()
 {
-  print_int(42);
-  print_int(71);
-  print_int(1);
+  print_line(42);
+  print_line(71);
+  print_line(1);
   return 0;
 }

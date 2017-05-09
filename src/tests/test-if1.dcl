@@ -1,6 +1,6 @@
 int main()
 {
-  if (true) print_int(42);
-  print_int(17);
+  if (true) print_line(42);
+  print_line(17);
   return 0;
 }

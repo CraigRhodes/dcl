@@ -6,11 +6,11 @@ int fib(int x)
 
 int main()
 {
-  print_int(fib(0));
-  print_int(fib(1));
-  print_int(fib(2));
-  print_int(fib(3));
-  print_int(fib(4));
-  print_int(fib(5));
+  print_line(fib(0));
+  print_line(fib(1));
+  print_line(fib(2));
+  print_line(fib(3));
+  print_line(fib(4));
+  print_line(fib(5));
   return 0;
 }

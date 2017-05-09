@@ -2,7 +2,7 @@ void main() {
 	int a;
 	int[] b;
 	b = [4,4,5];
-	print_int(b{|0|});
+	print_line(b{|0|});
 
 }
 

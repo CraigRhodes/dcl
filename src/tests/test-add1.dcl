@@ -5,6 +5,6 @@ int main()
 	int b;
 	a = 17;
 	b = 25; 
-	print_int(a+b);
+	print_line(a+b);
   return 0;
 }

@@ -1,7 +1,7 @@
 double main() {
 	double a;
 	a = 6^2; 
-	print_double(a);
+	print_line(a);
 	return a;
 }
 

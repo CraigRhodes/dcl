@@ -2,7 +2,7 @@ void main() {
 	int a;
 	string[] b;
 	b = ['craig','will','chang'];
-	print_string(b{|2|});
+	print_line(b{|2|});
 
 }
 

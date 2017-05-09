@@ -118,7 +118,7 @@ let translate (globals, functions) =
   let close_t = L.function_type i32_t [| i32_t |] in
   let close_func = L.declare_function "close" close_t the_module in
 
-  let read_t = L.function_type i32_t [| i32_t; ptr_t; i32_t |] in
+  let read_t = L.function_type i32_t [| ptr_t |] in
   let read_func = L.declare_function "read" read_t the_module in
 
   let write_t = L.function_type i32_t [| i32_t; ptr_t; i32_t |] in

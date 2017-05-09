@@ -1,11 +1,11 @@
 
-int x = 0 buteverytime (x==2) { print_int(x); };
+int x = 0 buteverytime (x==2) { print_line(x); };
 
 int main() {
 	x = 2; 
-	print_string("Hello");
+	print_line("Hello");
 	x = 1;
-	print_string("world");
+	print_line("world");
 	x = 2;
 	x = 0; 
 

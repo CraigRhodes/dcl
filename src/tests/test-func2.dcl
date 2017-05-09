@@ -12,7 +12,7 @@ int main()
 
   fun(i = 2, i = i+1);
 
-  print_int(i);
+  print_line(i);
   return 0;
 }
 

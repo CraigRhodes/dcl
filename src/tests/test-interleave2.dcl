@@ -7,7 +7,7 @@ int main() {
 	test(4.3);
 	int a; 
 	a = 5;
-	print_int(a);
+	print_line(a);
 	return a;
 }
 
