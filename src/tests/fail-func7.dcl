@@ -1,9 +1,9 @@
-void foo(int a, bool b)
+void foo(int a, double b)
 {
 }
 
 int main()
 {
-  foo(42, true);
-  foo(42, true, false); /* Wrong number of arguments */
+  foo(42, 23.4);
+  foo(42, 23.5, 636.1); /* Wrong number of arguments */
 }

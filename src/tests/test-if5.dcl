@@ -1,4 +1,4 @@
-int cond(bool b)
+int cond(int b)
 {
   int x;
   if (b)
@@ -10,7 +10,7 @@ int cond(bool b)
 
 int main()
 {
- print_line(cond(true));
- print_line(cond(false));
+ print_line(cond(1));
+ print_line(cond(0));
  return 0;
 }

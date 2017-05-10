@@ -1,8 +1,8 @@
 int main()
 {
-  int i;
+  double j;
 
-  for (i = 0; i ; i = i + 1) {} /* i is an integer, not Boolean */
+  for (int i = 0; j ; i = i + 1) {} /* j is a double, not an integer */
 
   return 0;
 }

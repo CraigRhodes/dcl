@@ -1,11 +1,11 @@
 int a;
-bool b;
+double b;
 
-void foo(int c, bool d)    
+void foo(int c, double d)    
 {
   int d;
-  bool e;
-  b + a; /* Error: bool + int */
+  double e;
+  b + a; /* Error: double + int */
 }
 
 int main()

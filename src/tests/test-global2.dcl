@@ -1,4 +1,4 @@
-bool i;
+double i;
 
 int main()
 {
