@@ -1,1 +1,1 @@
-Fatal error: exception Failure("illegal character [")
+Fatal error: exception Failure("illegal binary operator string + int[] in g + h")
