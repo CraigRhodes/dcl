@@ -37,7 +37,7 @@ struct string read(struct string in_file_name) {
     return (struct string) {0, ""};
   }
   fseek(fp, 0, SEEK_SET);
-  fread(buffer, len, sizeof(char), fp);
+  fread(buffer, len + 1, sizeof(char), fp);
   fclose(fp);
   return (struct string) {len, buffer};
 }
