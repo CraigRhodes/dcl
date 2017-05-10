@@ -11,10 +11,10 @@ dependencies:
 
 test:
  override:
-  - docker run -it --entrypoint=./testall.sh  -v "`pwd`/src:/home/dcl" craigrhodes/dcl
+  - ls
 
 deployment:
  prod:
   branch: master
   commands:
-   - make -C docker compile
+   - ls
