@@ -5,7 +5,7 @@ string[] split(string whole, string sep) {
 }
 
 string join(string[] parts, string sep) {
-	...
+	string total = "";
 }
 
 string bee_movie_script = read("bee_movie_script.txt");
