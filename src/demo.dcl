@@ -67,12 +67,3 @@ void main() {
     
     write("b++_movie_script.txt", join(modified_bee_movie_words, " "));
 }
-
-/* Would be cool if we fit this on one slide and then highlight it for different parts:
-     * Variable declaractions
-     * Buteverytime
-     * Being able to define your own functions that are non-trivial
-     * File I/O
-     * Arrays
-     * Strings
- */

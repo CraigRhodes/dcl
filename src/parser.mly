@@ -55,7 +55,7 @@ bdecl:
    typ ID ASSIGN expr BUTEVERYTIME LPAREN expr RPAREN LBRACE stmt_list RBRACE
      { (GlobalAssign($1, $2, $4), { typ = $1;
    fname = "__" ^ $2;
-   formals = [($1, $2)];
+   formals = [($1, $2) ; ($1, "~" ^ $2)];
    body = let full_stmt_list = (List.rev $10) @ [ Return (Id($2)) ] in
           [ If($7, Block(full_stmt_list), Return (Id($2))) ]  (*(Id($2))*)
         }) 
