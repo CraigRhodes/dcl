@@ -11,10 +11,10 @@ dependencies:
 
 test:
  override:
-  - ls
+  - make -C docker test-ci
 
 deployment:
  prod:
   branch: master
   commands:
-   - ls
+   - make -C docker compile-ci

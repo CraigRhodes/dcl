@@ -1,4 +1,4 @@
-.PHONY: default docker push commit modify test stop compile build clean
+.PHONY: default docker push commit modify test stop compile build clean test-ci compile-ci
 
 default: docker 
 
@@ -26,6 +26,12 @@ push:
 
 test: clean compile
 	docker run --rm -v "`pwd`/../src:/home/dcl-user/dcl" -it --entrypoint=./testall.sh craigrhodes/dcl
+
+test-ci: compile-ci
+	docker run -v "`pwd`/../src:/home/dcl-user/dcl" -it --entrypoint=./testall.sh craigrhodes/dcl
+
+compile-ci:
+	docker run -it -v "`pwd`/../src:/home/dcl-user/dcl" --entrypoint=make craigrhodes/dcl
 
 clean:
 	docker run --rm -v "`pwd`/../src:/home/dcl-user/dcl" -it --entrypoint=make craigrhodes/dcl clean
