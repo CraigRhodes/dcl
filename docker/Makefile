@@ -1,4 +1,4 @@
-.PHONY: default docker push commit modify test stop compile build clean t
+.PHONY: default docker push commit modify test stop compile build clean 
 
 default: docker 
 

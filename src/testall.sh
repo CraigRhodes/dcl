@@ -94,7 +94,8 @@ Check() {
     generatedfiles="$generatedfiles ${basename}.ll ${basename}.s ${basename}.exe ${basename}.out" &&
     Run "$DCL" "<" $1 ">" "${basename}.ll" &&
     Run "$LLC" "${basename}.ll" ">" "${basename}.s" &&
-    Run "./${basename}.exe" > "${basename}.out" &&
+    Run "gcc -o ${basename}.exe ${basename}.s ~/dcl/externalcalls.o -lm" &&
+    RUN "./${basename}.exe" ">" "${basename}.out" &&
     Compare ${basename}.out ${reffile}.out ${basename}.diff
 
     # Report the status and clean up the generated files
@@ -175,7 +176,7 @@ for file in $files
 do
     case $file in
 	*test-*)
-	    Check $file 2>> $globallog
+	    Check $file 2>> $globallog 
 	    ;;
 	*fail-*)
 	    CheckFail $file 2>> $globallog
@@ -186,5 +187,11 @@ do
 	    ;;
     esac
 done
+
+if [ $globalerror -eq 0 ]; then
+	echo "All tests passed!" >&2
+else
+	echo "Unsuccessful..." >&2
+fi
 
 exit $globalerror
