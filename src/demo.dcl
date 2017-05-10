@@ -20,7 +20,6 @@ string[] split(string whole, string sep) {
     int current_index = 0;
     looking_for_parts = 0;
     string current = "";
-    string[] bs = [" hie", "couch", "fddd"];
     for(index = 0; index < #whole; index = index + 1) {
         if(whole{| index |} == sep) {
             if(looking_for_parts) {
@@ -48,9 +47,12 @@ string join(string[] parts, string sep) {
     return total;
 }
 
-string current_word = "" buteverytime 
-((current_word{| 0 |} == 'b' || current_word{| 1 |} == 'B') &&
- current_word{| 1 |} == 'e' && current_word{| 2 |} == 'e') {
+int starts_with(string haystack) {
+    return (haystack{| 0 |} == 'b' || haystack{| 0 |} == 'B') &&
+           haystack{| 1 |} == 'e' && haystack{| 2 |} == 'e';
+}
+
+string current_word = "" buteverytime (starts_with(current_word)) {
     current_word = "     b + +     ";
 }
 
