@@ -7,8 +7,8 @@ open Ast
 /* Ocamlyacc parser for DCL */
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE EXPONT ASSIGN NOT
-%token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR DOUBLE STRING BUTEVERYTIME
-%token RETURN IF ELSE FOR WHILE INT BOOL VOID LINDEX RINDEX
+%token EQ NEQ LT LEQ GT GEQ AND OR DOUBLE STRING BUTEVERYTIME
+%token RETURN IF ELSE FOR WHILE INT VOID LINDEX RINDEX
 %token LSQUARE RSQUARE OF LENGTH
 %token <int> INTLITERAL
 %token <float> DBLLITERAL
@@ -19,7 +19,6 @@ open Ast
 %nonassoc NOELSE
 %nonassoc ELSE
 %right ASSIGN
-%nonassoc LINDEX
 %left OR
 %left AND
 %left EQ NEQ
@@ -28,6 +27,7 @@ open Ast
 %left TIMES DIVIDE
 %right EXPONT
 %right NOT NEG LENGTH
+%nonassoc LINDEX
 
 %start program
 %type <Ast.program> program
@@ -70,7 +70,6 @@ dtyp:
     INT { Int }
   | DOUBLE { Double }
   | STRING { String }
-  | BOOL { Bool }
 
 dim_list:
     LSQUARE RSQUARE  { 1 }
@@ -127,8 +126,6 @@ expr:
     INTLITERAL       { IntLiteral($1) }
   | DBLLITERAL       { DblLiteral($1) }
   | STRLITERAL       { StrLiteral($1) }
-  | TRUE             {BoolLiteral(true)}
-  | FALSE            {BoolLiteral(false)}
   | simple_arr_literal { ArrLiteral($1) }
   | ID               { Id($1) }
   | expr PLUS   expr { Binop($1, Add,   $3) }

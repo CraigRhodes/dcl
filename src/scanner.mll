@@ -70,9 +70,6 @@ rule token = parse
 | "double" { DOUBLE }
 | "string" { STRING }
 | "void"   { VOID }
-| "bool"    { BOOL }
-| "true"   { TRUE }
-| "false"  { FALSE }
 | "["      { LSQUARE }
 | "]"      { RSQUARE }
 | ","      { COMMA }
