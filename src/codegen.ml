@@ -363,11 +363,12 @@ let translate (globals, functions) =
                      L.build_mul (L.build_intcast result i32_t "convert" builder) (L.const_int i32_t (-1)) "tmp" builder
     )
       | A.TildeOp(id) -> let x = "~" ^ id in 
-                      (*if Hashtbl.mem expr_store_global x 
-                      then*)
+                      if Hashtbl.mem expr_store_global x 
+                      then
                         L.build_load (lookup (x)) x builder 
-                     (* else 
-                        ignore (Hashtbl.add expr_store_global x () ); L.build_load (lookup (x)) id builder *)
+                      else
+                        ( ignore (Hashtbl.add expr_store_global x (lookup id) ); L.build_load (lookup (id)) x builder )
+                        (*ignore (Hashtbl.add expr_store_global x () ); L.build_load (lookup (x)) id builder *)
 
       | A.Unop(op, e) ->
     let e' = expr builder e in
