@@ -6,7 +6,7 @@ open Ast
 
 /* Ocamlyacc parser for DCL */
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
-%token PLUS MINUS TIMES DIVIDE EXPONT ASSIGN NOT
+%token PLUS MINUS TIMES DIVIDE EXPONT ASSIGN NOT TILDE
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR DOUBLE STRING BUTEVERYTIME
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID LINDEX RINDEX
 %token LSQUARE RSQUARE OF LENGTH
@@ -130,6 +130,7 @@ expr:
   | TRUE             {BoolLiteral(true)}
   | FALSE            {BoolLiteral(false)}
   | simple_arr_literal { ArrLiteral($1) }
+  | TILDE ID       { TildeOp($2) }
   | ID               { Id($1) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }

@@ -338,7 +338,7 @@ let translate (globals, functions) =
                      else 
                        let str_ptr_e1' = L.build_extractvalue e1' 1 "extract_char_array" builder in
                        let str_ptr_e2' = L.build_extractvalue e2' 1 "extract_char_array" builder in
-                       let result = L.build_call addstr_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
+                       let result = L.build_call strcmp_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
                        L.build_icmp L.Icmp.Ne result (L.const_int i32_t 0) "tmp" builder
     | A.Less      -> if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then    L.build_icmp L.Icmp.Slt e1' e2' "tmp" builder
                      else if L.type_of e1' == ltype_of_typ (A.Simple(A.Double)) then L.build_fcmp L.Fcmp.Olt e1' e2' "tmp" builder
@@ -369,6 +369,13 @@ let translate (globals, functions) =
                        let result = L.build_call addstr_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
                        L.build_icmp L.Icmp.Sge result (L.const_int i32_t 0) "tmp" builder
     )
+      | A.TildeOp(id) -> let x = "~" ^ id in 
+                      (*if Hashtbl.mem expr_store_global x 
+                      then*)
+                        L.build_load (lookup (x)) x builder 
+                     (* else 
+                        ignore (Hashtbl.add expr_store_global x () ); L.build_load (lookup (x)) id builder *)
+
       | A.Unop(op, e) ->
     let e' = expr builder e in
     (match op with
@@ -478,8 +485,7 @@ let translate (globals, functions) =
                         ignore ( L.build_call fdef (Array.of_list actuals) result builder ) 
                       done
                     ) 
-              ) ;
-                    builder
+              ) ; builder
       | A.Return e -> ignore (match fdecl.A.typ with
     A.Void -> L.build_ret_void builder
   | _ -> L.build_ret (expr builder e) builder); builder

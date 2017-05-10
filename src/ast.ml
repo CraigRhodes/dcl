@@ -4,7 +4,7 @@
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
           And | Or  | Exp 
 
-type uop = Neg | Not | Length
+type uop = Neg | Not | Tilde | Length
 
 type dtyp = Int | Double | String | Bool
 
@@ -29,6 +29,7 @@ type expr =
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
+  | TildeOp of string
   | Assign of string * expr
   | ArrayAssign of string * expr list * expr
   | Call of string * expr list
@@ -78,6 +79,7 @@ let string_of_op = function
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
+  | Tilde -> "~"
   | Length -> "#"
 
 let convert_array l conversion joiner =
@@ -116,6 +118,7 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
+  | TildeOp(id) -> "~" ^ id
   | ArrayAssign(v, l, e) -> v ^ "[" ^ string_of_expr (List.hd l) ^ "]" ^ " = " ^ string_of_expr e
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->

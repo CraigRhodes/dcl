@@ -53,6 +53,7 @@ rule token = parse
 | "&&"     { AND }
 | "||"     { OR }
 | "!"      { NOT }
+| "~"      { TILDE }
 
 (* Conditional Operators *)
 | "if"     { IF }

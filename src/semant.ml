@@ -204,6 +204,7 @@ let check (globals, functions) =
                             Array(d, _) -> Simple(d)
                           | Simple(String) -> Simple(String)
                           | _ -> raise (Failure ("Entity being indexed ('" ^ string_of_expr a ^"') cannot be array")))
+      | TildeOp(e) as ex -> type_of_identifier e
       | Id s -> type_of_identifier s
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
 	(match op with
