@@ -6,6 +6,7 @@ open Hashtbl
 open Llvm
 
 module StringMap = Map.Make(String)
+let formals:(string, A.typ) Hashtbl.t = Hashtbl.create 100
 let symbols:(string, A.typ) Hashtbl.t = Hashtbl.create 100 
 let globalsymbols:(string, A.typ) Hashtbl.t = Hashtbl.create 100 
 
@@ -60,8 +61,9 @@ let check (globals, functions) =
 
    let type_of_identifier s =
       try Hashtbl.find symbols s
-      with Not_found -> try Hashtbl.find globalsymbols s
-                        with Not_found -> raise (Failure ("undeclared identifier " ^ s ))
+      with Not_found -> try Hashtbl.find formals s
+                        with Not_found -> try Hashtbl.find globalsymbols s
+                                          with Not_found -> raise (Failure ("undeclared identifier " ^ s ))
     in
 
     (* Return the type of an expression or throw an exception *)
@@ -70,87 +72,25 @@ let check (globals, functions) =
 
   if List.mem "print" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function print may not be defined")) else ();
-
-  if List.mem "print_bool" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function print_bool may not be defined")) else ();
-
-  if List.mem "print_double" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function print_double may not be defined")) else ();
-
-  if List.mem "print_string" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function print_string may not be defined")) else ();
-
-  if List.mem "exp_int" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function exp_int may not be defined")) else ();
-
-  if List.mem "exp_dbl" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function exp_dbl may not be defined")) else ();
-
-  if List.mem "add_str" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function add_str may not be defined")) else ();
-
-  if List.mem "bopen" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function bopen may not be defined")) else ();
-
-  if List.mem "bclose" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function bclose may not be defined")) else ();
-
-  if List.mem "bread" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function bread may not be defined")) else ();
-
-  if List.mem "bwrite" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function bwrite may not be defined")) else ();
-
-  if List.mem "malloc" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function malloc may not be defined")) else ();
-
-  if List.mem "free" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function free may not be defined")) else ();
   
   if List.mem "print_line" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function print_line may not be defined")) else ();
+  
+  if List.mem "read" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function read may not be defined")) else ();
+  
+  if List.mem "write" (List.map (fun fd -> fd.fname) functions)
+  then raise (Failure ("function write may not be defined")) else ();
 
   report_duplicate (fun n -> "duplicate function " ^ n)
     (List.map (fun fd -> fd.fname) functions);
 
   (* Function declaration for a named function *)
   let built_in_decls =  
-    StringMap.add "free" 
-    { typ = Void; fname = "free"; formals = [(Simple(String), "tofree")]; body = [] }
-    (StringMap. add "malloc"
-     { typ = Simple(String); fname = "malloc"; formals = [(Simple(Int), "size")]; body = [] }
-      (StringMap.add "bwrite"
-        { typ = Simple(Int); fname = "bwrite"; formals = [(Simple(Int), "fd"); (Simple(String), "buf"); (Simple(Int), "count")]; body = []}
-      (StringMap.add "bread"
-         { typ = Simple(String); fname = "bread"; formals = [(Simple(String), "filename")];  body = [] }
-      (
-      StringMap.add "bclose"  (* key *)
-       { typ = Simple(Int); fname = "bclose"; formals = [(Simple(Int), "fd")]; body = [] }
-      ( 
-      StringMap.add "bopen"  (* key *)
-       { typ = Simple(Int); fname = "bopen"; formals = [(Simple(String), "name"); (Simple(Int), "flags"); (Simple(Int), "mode")];
-         body = [] } (* value *)
-
-      (StringMap.add "print_double"  (* key *)
-       { typ = Void; fname = "print"; formals = [(Simple(Double), "x")];
-         body = [] } (* value *)
-       
-       (StringMap.add "print_int" 
-        { typ = Void; fname = "print"; formals = [(Simple(Int), "x")];
-          body = [] }
-
-        (StringMap.add "print_bool"
-        { typ = Void; fname = "printb"; formals = [(Simple(Bool), "x")];
-          body = [] }
-
-
-        (StringMap.singleton "print_string"
-        
-         { typ = Simple(String); fname = "print_string"; formals = [(Simple(String), "x")];
-           body = [] })
-
-      ) )))))))
-   in
+    StringMap.add "read" 
+    { typ = A.Simple(A.String); fname = "read"; formals = [(Simple(String), "file_name")]; body = [] }
+    (StringMap.singleton "write" 
+    { typ = A.Simple(A.Int); fname = "write"; formals = [(Simple(String), "file_name") ; (Simple(String), "string_to_write")]; body = [] }) in
 
 
 
@@ -174,7 +114,7 @@ let check (globals, functions) =
       (List.map snd func.formals
       );
 
-    let symbol = List.iter (fun (t, n) -> Hashtbl.add symbols n t )
+    let symbol = List.iter (fun (t, n) -> Hashtbl.add formals n t )
   func.formals
     in
 
@@ -182,7 +122,6 @@ let check (globals, functions) =
 	    IntLiteral _ -> Simple(Int)
       | DblLiteral _ -> Simple(Double)
       | StrLiteral _ -> Simple(String)
-      | BoolLiteral _ -> Simple(Bool)
       | ArrLiteral(l) -> let first_type = expr (List.hd l) in
                          let _ = (match first_type with 
                                     Simple _ -> ()
@@ -208,10 +147,10 @@ let check (globals, functions) =
       | Id s -> type_of_identifier s
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
 	(match op with
-        Equal | Neq when t1 = t2 -> Simple(Bool)
+        Equal | Neq when t1 = t2 -> Simple(Int)
         |  Add | Sub | Mult | Div when t1 = Simple(Int) && t2 = Simple(Int) -> Simple(Int)
-	      | Less | Leq | Greater | Geq when t1 = Simple(Int) && t2 = Simple(Int) -> Simple(Bool)
-	      | And  | Or when t1 = Simple(Bool) && t2 = Simple(Bool) -> Simple(Bool)
+	      | Less | Leq | Greater | Geq when t1 = Simple(Int) && t2 = Simple(Int) -> Simple(Int)
+	      | And  | Or when t1 = Simple(Int) && t2 = Simple(Int) -> Simple(Int)
         | Exp when t1 = Simple(Int) && t2 = Simple(Int) -> Simple(Double)
         | Add | Sub | Mult | Div | Exp when t1 = Simple(Double) && t2 = Simple(Double) -> Simple(Double)
         | Less | Leq | Greater | Geq 
@@ -227,7 +166,6 @@ let check (globals, functions) =
       | Unop(op, e) as ex -> let t = expr e in
    (match op with
 	   Neg when t = Simple(Int) -> Simple(Int)
-   	| Not when t = Simple(Bool) -> Simple(Bool)
 	 | Not when t = Simple(Int) -> Simple(Int)
    | Neg when t = Simple(Double) -> Simple(Double)
    | Length when t = Simple(String) -> Simple(Int)
@@ -266,7 +204,6 @@ let check (globals, functions) =
          then (if List.length actuals == 1 
                then let arg_type = string_of_typ (expr (List.hd actuals)) in
                     if arg_type = string_of_typ (Simple(Int)) || 
-			arg_type = string_of_typ (Simple(Bool)) ||
                        arg_type = string_of_typ (Simple(Double)) ||
                        arg_type = string_of_typ (Simple(String)) 
                     then Void
@@ -285,8 +222,8 @@ let check (globals, functions) =
                     fd.typ)
     in
 
-    let check_bool_expr e = if string_of_typ (expr e) != string_of_typ (Simple(Bool))
-     then raise (Failure ("expected Bool expression in " ^ string_of_expr e))
+    let check_int_expr e = if string_of_typ (expr e) != string_of_typ (Simple(Int))
+     then raise (Failure ("expected int expression in " ^ string_of_expr e))
      else () in
 
     
@@ -319,10 +256,10 @@ let check (globals, functions) =
          raise (Failure ("return gives " ^ string_of_typ t ^ " expected " ^
                          string_of_typ func.typ ^ " in " ^ string_of_expr e))
            
-      | If(p, b1, b2) -> check_bool_expr p; stmt b1; stmt b2
-      | For(e1, e2, e3, st) -> ignore (expr e1); check_bool_expr e2;
+      | If(p, b1, b2) -> check_int_expr p; stmt b1; stmt b2
+      | For(e1, e2, e3, st) -> ignore (expr e1); check_int_expr e2;
                                ignore (expr e3); stmt st
-      | While(p, s) -> check_bool_expr p; stmt s
+      | While(p, s) -> check_int_expr p; stmt s
     in
 
     stmt (Block func.body)

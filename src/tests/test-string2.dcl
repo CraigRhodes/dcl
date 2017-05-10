@@ -4,7 +4,7 @@ void main() {
 	string i;
 	g = "hello";
 	h = ['world', 'ghana'];
-	i = g + h{|0|};
+        i = (h{|0|}) + g;
 	print_line(i);
 }
 

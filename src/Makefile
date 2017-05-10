@@ -8,7 +8,7 @@ all : clean dcl.native externalcalls.o
 
 dcl.native : 
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 \
-		dcl.native 
+		dcl.native
 
 # "make clean" removes all generated files
 

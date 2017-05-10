@@ -19,7 +19,6 @@ open Ast
 %nonassoc NOELSE
 %nonassoc ELSE
 %right ASSIGN
-%nonassoc LINDEX
 %left OR
 %left AND
 %left EQ NEQ
@@ -28,6 +27,7 @@ open Ast
 %left TIMES DIVIDE
 %right EXPONT
 %right NOT NEG LENGTH
+%nonassoc LINDEX
 
 %start program
 %type <Ast.program> program
@@ -70,7 +70,6 @@ dtyp:
     INT { Int }
   | DOUBLE { Double }
   | STRING { String }
-  | BOOL { Bool }
 
 dim_list:
     LSQUARE RSQUARE  { 1 }
@@ -127,8 +126,6 @@ expr:
     INTLITERAL       { IntLiteral($1) }
   | DBLLITERAL       { DblLiteral($1) }
   | STRLITERAL       { StrLiteral($1) }
-  | TRUE             {BoolLiteral(true)}
-  | FALSE            {BoolLiteral(false)}
   | simple_arr_literal { ArrLiteral($1) }
   | TILDE ID       { TildeOp($2) }
   | ID               { Id($1) }

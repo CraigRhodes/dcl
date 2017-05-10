@@ -1,1 +1,1 @@
-Fatal error: exception Failure("illegal character [")
+Fatal error: exception Failure("illegal assignment int = string in int value = g{|2|}")

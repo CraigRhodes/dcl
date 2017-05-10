@@ -6,7 +6,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not | Tilde | Length
 
-type dtyp = Int | Double | String | Bool
+type dtyp = Int | Double | String
 
 type typ = Simple of dtyp | Void | Array of dtyp * int
 
@@ -20,7 +20,6 @@ type expr =
   (* arr_literals
   |*) 
     IntLiteral of int
-  | BoolLiteral of bool
   | DblLiteral of float 
   | StrLiteral of string
   | ArrLiteral of expr list 
@@ -90,7 +89,6 @@ let convert_array l conversion joiner =
 let string_of_d_typ = function
     Int -> "int"
   | Double -> "double"
-  | Bool -> "bool"
   | String -> "string"
 
 let rec repeat c = function 
@@ -104,8 +102,6 @@ let string_of_typ = function
 
 let rec string_of_expr = function
     IntLiteral(l) -> string_of_int l
-  | BoolLiteral(true) -> "true"
-  | BoolLiteral(false) -> "false"
   | DblLiteral(l) -> string_of_float l
   | StrLiteral(l) -> "\"" ^ l ^ "\""
   | ArrLiteral(l) -> convert_array l string_of_expr ", "

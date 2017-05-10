@@ -34,7 +34,6 @@ let translate (globals, functions) =
   let globalbuilder = builder context 
   and i32_t  = L.i32_type    context
   and i8_t   = L.i8_type     context
-  and i1_t   = L.i1_type     context
   and f64_t  = L.double_type context
   and ptr_t = L.pointer_type (L.i8_type (context)) 
   and void_t = L.void_type   context in
@@ -48,7 +47,6 @@ let translate (globals, functions) =
       A.Simple(A.Int) -> i32_t
     | A.Simple(A.String) -> L.struct_type context [| i32_t ; L.pointer_type i8_t |]
     | A.Simple(A.Double) -> f64_t
-	| A.Simple(A.Bool) -> i1_t
     | A.Array(d, _) ->  L.struct_type context [| i32_t ; L.pointer_type (ltype_of_typ (A.Simple(d))) |]
     | A.Void -> void_t in
 
@@ -72,9 +70,6 @@ let translate (globals, functions) =
   (* String concatenation *)
   let strcmp_t = L.function_type i32_t [| L.pointer_type i8_t ; L.pointer_type i8_t |] in
   let strcmp_func = L.declare_function "strcmp" strcmp_t the_module in
-
-  let addstr_t = L.function_type (L.pointer_type i8_t) [| L.pointer_type i8_t ; L.pointer_type i8_t |] in
-  let addstr_func = L.declare_function "__add_str" addstr_t the_module in
   
   (* Exponent *)
   let expint_t = L.function_type f64_t [| i32_t ; i32_t |] in
@@ -84,25 +79,12 @@ let translate (globals, functions) =
   let expdbl_func = L.declare_function "__exp_dbl" expdbl_t the_module in
 
   (* File I/O *)
-  let open_t = L.function_type i32_t [| ptr_t; i32_t; i32_t |] in
-  let open_func = L.declare_function "open" open_t the_module in
 
-  let close_t = L.function_type i32_t [| i32_t |] in
-  let close_func = L.declare_function "close" close_t the_module in
-
-  let read_t = L.function_type i32_t [| ptr_t |] in
+  let read_t = L.function_type (ltype_of_typ (A.Simple(A.String))) [| ltype_of_typ (A.Simple(A.String)) |] in
   let read_func = L.declare_function "read" read_t the_module in
 
-  let write_t = L.function_type i32_t [| i32_t; ptr_t; i32_t |] in
-  let write_func = L.declare_function "write" write_t the_module in 
-
-  let free_t = L.function_type void_t [| ptr_t |] in
-  let free_func = L.declare_function "free" free_t the_module in
-
-  let malloc_t = L.function_type ptr_t [| i32_t |] in
-  let malloc_func = L.declare_function "malloc" malloc_t the_module in
-
-  
+  let write_t = L.function_type i32_t [| ltype_of_typ (A.Simple(A.String)) ; ltype_of_typ (A.Simple(A.String)) |] in
+  let write_func = L.declare_function "write" write_t the_module in
 
   (* Define each function (arguments and return type) so we can call it *)
   let function_decls = 
@@ -157,7 +139,6 @@ let translate (globals, functions) =
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
         A.IntLiteral i -> L.const_int i32_t i
-      | A.BoolLiteral b -> L.const_int i1_t (if b then 1 else 0)
       | A.DblLiteral d -> L.const_float f64_t d
       | A.StrLiteral s -> let llvm_string = L.const_string context s in
                           let size = String.length s in
@@ -326,48 +307,60 @@ let translate (globals, functions) =
                      else L.build_call expdbl_func [| e1' ; e2' |] "tmp" builder
     | A.And       -> L.build_and e1' e2' "tmp" builder
     | A.Or        -> L.build_or e1' e2' "tmp" builder
-    | A.Equal     -> if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then L.build_icmp L.Icmp.Eq e1' e2' "tmp" builder
+    | A.Equal     -> let result = (
+                     if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then L.build_icmp L.Icmp.Eq e1' e2' "tmp" builder
                      else if L.type_of e1' == ltype_of_typ (A.Simple(A.Double)) then L.build_fcmp L.Fcmp.Oeq e1' e2' "tmp" builder
                      else 
                        let str_ptr_e1' = L.build_extractvalue e1' 1 "extract_char_array" builder in
                        let str_ptr_e2' = L.build_extractvalue e2' 1 "extract_char_array" builder in
                        let result = L.build_call strcmp_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
-                       L.build_icmp L.Icmp.Eq result (L.const_int i32_t 0) "tmp" builder
-    | A.Neq       -> if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then L.build_icmp L.Icmp.Ne e1' e2' "tmp" builder
+                       L.build_icmp L.Icmp.Eq result (L.const_int i32_t 0) "tmp" builder) in
+                     L.build_mul (L.build_intcast result i32_t "convert" builder) (L.const_int i32_t (-1)) "tmp" builder
+    | A.Neq       -> let result = (
+                     if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then L.build_icmp L.Icmp.Ne e1' e2' "tmp" builder
                      else if L.type_of e1' == ltype_of_typ (A.Simple(A.Double)) then L.build_fcmp L.Fcmp.One e1' e2' "tmp" builder
                      else 
                        let str_ptr_e1' = L.build_extractvalue e1' 1 "extract_char_array" builder in
                        let str_ptr_e2' = L.build_extractvalue e2' 1 "extract_char_array" builder in
                        let result = L.build_call strcmp_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
-                       L.build_icmp L.Icmp.Ne result (L.const_int i32_t 0) "tmp" builder
-    | A.Less      -> if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then    L.build_icmp L.Icmp.Slt e1' e2' "tmp" builder
+                       L.build_icmp L.Icmp.Ne result (L.const_int i32_t 0) "tmp" builder) in
+                     L.build_mul (L.build_intcast result i32_t "convert" builder) (L.const_int i32_t (-1)) "tmp" builder
+    | A.Less      -> let result = (
+                     if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then    L.build_icmp L.Icmp.Slt e1' e2' "tmp" builder
                      else if L.type_of e1' == ltype_of_typ (A.Simple(A.Double)) then L.build_fcmp L.Fcmp.Olt e1' e2' "tmp" builder
                      else 
                        let str_ptr_e1' = L.build_extractvalue e1' 1 "extract_char_array" builder in
                        let str_ptr_e2' = L.build_extractvalue e2' 1 "extract_char_array" builder in
-                       let result = L.build_call addstr_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
-                       L.build_icmp L.Icmp.Slt result (L.const_int i32_t 0) "tmp" builder
-    | A.Leq       -> if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then L.build_icmp L.Icmp.Sle e1' e2' "tmp" builder
+                       let result = L.build_call strcmp_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
+                       L.build_icmp L.Icmp.Slt result (L.const_int i32_t 0) "tmp" builder) in
+                     L.build_mul (L.build_intcast result i32_t "convert" builder) (L.const_int i32_t (-1)) "tmp" builder
+    | A.Leq       -> let result = (
+                     if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then L.build_icmp L.Icmp.Sle e1' e2' "tmp" builder
                      else if L.type_of e1' == ltype_of_typ (A.Simple(A.Double)) then L.build_fcmp L.Fcmp.Ole e1' e2' "tmp" builder
                      else 
                        let str_ptr_e1' = L.build_extractvalue e1' 1 "extract_char_array" builder in
                        let str_ptr_e2' = L.build_extractvalue e2' 1 "extract_char_array" builder in
-                       let result = L.build_call addstr_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
-                       L.build_icmp L.Icmp.Sle result (L.const_int i32_t 0) "tmp" builder
-    | A.Greater   -> if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then L.build_icmp L.Icmp.Sgt e1' e2' "tmp" builder
+                       let result = L.build_call strcmp_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
+                       L.build_icmp L.Icmp.Sle result (L.const_int i32_t 0) "tmp" builder) in
+                     L.build_mul (L.build_intcast result i32_t "convert" builder) (L.const_int i32_t (-1)) "tmp" builder
+    | A.Greater   -> let result = (
+                     if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then L.build_icmp L.Icmp.Sgt e1' e2' "tmp" builder
                      else if L.type_of e1' == ltype_of_typ (A.Simple(A.Double)) then L.build_fcmp L.Fcmp.Ogt e1' e2' "tmp" builder
                      else 
                        let str_ptr_e1' = L.build_extractvalue e1' 1 "extract_char_array" builder in
                        let str_ptr_e2' = L.build_extractvalue e2' 1 "extract_char_array" builder in
-                       let result = L.build_call addstr_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
-                       L.build_icmp L.Icmp.Sgt result (L.const_int i32_t 0) "tmp" builder
-    | A.Geq       -> if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then L.build_icmp L.Icmp.Sge e1' e2' "tmp" builder
+                       let result = L.build_call strcmp_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
+                       L.build_icmp L.Icmp.Sgt result (L.const_int i32_t 0) "tmp" builder) in
+                     L.build_mul (L.build_intcast result i32_t "convert" builder) (L.const_int i32_t (-1)) "tmp" builder
+    | A.Geq       -> let result = (
+                     if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then L.build_icmp L.Icmp.Sge e1' e2' "tmp" builder
                      else if L.type_of e1' == ltype_of_typ (A.Simple(A.Double)) then L.build_fcmp L.Fcmp.Oge e1' e2' "tmp" builder
                      else 
                        let str_ptr_e1' = L.build_extractvalue e1' 1 "extract_char_array" builder in
                        let str_ptr_e2' = L.build_extractvalue e2' 1 "extract_char_array" builder in
-                       let result = L.build_call addstr_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
-                       L.build_icmp L.Icmp.Sge result (L.const_int i32_t 0) "tmp" builder
+                       let result = L.build_call strcmp_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
+                       L.build_icmp L.Icmp.Sge result (L.const_int i32_t 0) "tmp" builder) in
+                     L.build_mul (L.build_intcast result i32_t "convert" builder) (L.const_int i32_t (-1)) "tmp" builder
     )
       | A.TildeOp(id) -> let x = "~" ^ id in 
                       (*if Hashtbl.mem expr_store_global x 
@@ -387,35 +380,12 @@ let translate (globals, functions) =
       | A.LocalAssign (t, s, e) -> let local_var = L.build_alloca (ltype_of_typ t) s builder in
        Hashtbl.add local_vars s local_var;
       let e' = expr builder e in ignore (L.build_store e' local_var builder); ignore (Hashtbl.add expr_store_local s e'); e'
-      | A.Call ("print_int", [e])  -> L.build_call printf_func [| int_format_str ; expr builder e |] "print_int" builder
-      | A.Call ("print_bool", [e]) -> L.build_call printf_func [| int_format_str ; expr builder e |] "print_bool" builder
-      | A.Call ("print_double", [e]) -> L.build_call printf_func [| dbl_format_str ; expr builder e |] "print_double" builder
-
-      | A.Call ("print_string", [e]) -> L.build_call printf_func [| str_format_str ; expr builder e |] "print_string" builder
       (* File I/O calls *)
-      | A.Call("bopen", e) ->
-        let evald_expr_list = List.map (expr builder)e in
-        let evald_expr_arr = Array.of_list evald_expr_list in
-        L.build_call open_func evald_expr_arr "open" builder
-      | A.Call("bclose", e) ->
-        let evald_expr_list = List.map (expr builder)e in
-        let evald_expr_arr = Array.of_list evald_expr_list in
-        L.build_call close_func evald_expr_arr "close" builder
-      | A.Call("bread", e) ->
-        let evald_expr_list = List.map (expr builder)e in
-        let evald_expr_arr = Array.of_list evald_expr_list in
-        L.build_call read_func evald_expr_arr "read" builder
-      | A.Call("bwrite", e) ->
-        let evald_expr_list = List.map (expr builder)e in
-        let evald_expr_arr = Array.of_list evald_expr_list in
-        L.build_call write_func evald_expr_arr "write" builder
-      (* malloc and free for file i/o *)
-      | A.Call("free", e) ->
-        L.build_call free_func (Array.of_list (List.map (expr builder) e)) "" builder
-      | A.Call ("malloc", e) ->
-        let evald_expr_list = List.map (expr builder)e in
-        let evald_expr_arr = Array.of_list evald_expr_list in
-        L.build_call malloc_func evald_expr_arr "malloc" builder
+      | A.Call ("read", [e]) -> let temp = expr builder e in
+                                L.build_call read_func [| temp |] "read" builder  
+      | A.Call ("write", [e1 ; e2]) -> let temp1 = expr builder e1 in
+                                       let temp2 = expr builder e2 in
+                                       L.build_call write_func [| temp1 ; temp2 |] "write" builder  
       (* https://www.ibm.com/developerworks/library/os-createcompilerllvm1/ *)
       | A.ArrayAssign(v, i, e) -> let e' = expr builder e in 
                                   let i' = expr builder (List.hd i) in
@@ -483,6 +453,7 @@ let translate (globals, functions) =
                         let actuals = [(findValue varName)] in
                         let result = "" in
                         ignore ( L.build_call fdef (Array.of_list actuals) result builder ) 
+                        (* Hashtbl.iter (fun a b -> print_endline (L.string_of_llvalue (Hashtbl.find local_vars a)) ; print_endline a) local_vars *)
                       done
                     ) 
               ) ; builder
@@ -491,6 +462,7 @@ let translate (globals, functions) =
   | _ -> L.build_ret (expr builder e) builder); builder
       | A.If (predicate, then_stmt, else_stmt) ->
          let bool_val = expr builder predicate in
+         let bool_val = L.build_trunc bool_val (L.i1_type context) "convert" builder in
    let merge_bb = L.append_block context "merge" the_function in
 
    let then_bb = L.append_block context "then" the_function in
@@ -514,6 +486,7 @@ let translate (globals, functions) =
 
     let pred_builder = L.builder_at_end context pred_bb in
     let bool_val = expr pred_builder predicate in
+    let bool_val = L.build_trunc bool_val (L.i1_type context) "convert" pred_builder in
 
     let merge_bb = L.append_block context "merge" the_function in
     ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
