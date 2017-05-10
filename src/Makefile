@@ -4,7 +4,7 @@
 
 # Easiest way to build: using ocamlbuild, which in turn uses ocamlfind
 .PHONY : all
-all : clean dcl.native externalcalls.o
+all : dcl.native externalcalls.o
 
 dcl.native : 
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 \
