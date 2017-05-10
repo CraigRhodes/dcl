@@ -8,7 +8,7 @@ all : clean dcl.native externalcalls.o
 
 dcl.native : 
 	ocamlbuild -use-ocamlfind -pkgs llvm,llvm.analysis -cflags -w,+a-4 \
-		dcl.native >&2 2>/dev/null 
+		dcl.native >/dev/null 2>&1
 
 # "make clean" removes all generated files
 
@@ -16,7 +16,7 @@ dcl.native :
 clean :
 	ocamlbuild -clean
 	rm -rf testall.log *.diff dcl scanner.ml parser.ml parser.mli
-	rm -rf externalcalls
+	rm -rf externalcalls.o
 	rm -rf *.cmx *.cmi *.cmo *.cmx *.o *.s *.ll *.out *.exe
 
 # More detailed: build using ocamlc/ocamlopt + ocamlfind to locate LLVM
@@ -41,8 +41,8 @@ parser.ml parser.mli : parser.mly
 %.cmx : %.ml
 	ocamlfind ocamlopt -c -package llvm $<
 	
-externalcalls : externalcalls.c
-	cc -o externalcalls -DBUILD_TEST externalcalls.c
+externalcalls.o : externalcalls.c
+	cc -c -o externalcalls.o externalcalls.c
 
 
 
