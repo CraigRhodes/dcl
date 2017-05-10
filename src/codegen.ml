@@ -452,12 +452,17 @@ let translate (globals, functions) =
                         let varName = ignore(for i = 0 to ((String.length newStr) - 1) do String.set newStr i (String.get fdec.A.fname (i + 2)) done); newStr in
                         let actuals = [(findValue varName)] in
                         let result = "" in
-                        ignore ( L.build_call fdef (Array.of_list actuals) result builder ) 
+                        let new_value = L.build_call fdef (Array.of_list actuals) result builder in
+                        L.build_store new_value (lookup varName) builder
                         (* Hashtbl.iter (fun a b -> print_endline (L.string_of_llvalue (Hashtbl.find local_vars a)) ; print_endline a) local_vars *)
                       done
                     ) 
               ) ; builder
-      | A.Return e -> ignore (match fdecl.A.typ with
+      | A.Return e -> (*let _ = print_endline fdecl.A.fname in
+                      let e' = expr builder e in
+                      let _ = print_endline (L.string_of_lltype (L.type_of e')) in
+                      let _ = print_endline (L.string_of_lltype (ltype_of_typ fdecl.A.typ)) in*)
+                      ignore (match fdecl.A.typ with
     A.Void -> L.build_ret_void builder
   | _ -> L.build_ret (expr builder e) builder); builder
       | A.If (predicate, then_stmt, else_stmt) ->
@@ -504,7 +509,7 @@ let translate (globals, functions) =
     (* Add a return if the last block falls off the end *)
     add_terminal builder (match fdecl.A.typ with
         A.Void -> L.build_ret_void
-      | t -> L.build_ret (L.const_int (ltype_of_typ t) 0)) ;
+      | t -> L.build_ret (default fdecl.A.typ)) ;
   in
 
   List.iter build_function_body functions;
