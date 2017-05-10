@@ -1,6 +1,6 @@
 int hamilton() {
 	int thomasjefferson = 1789;
-	bool myshot = true;
+	int myshot = 1;
 	return thomasjefferson;
 }
 

@@ -1,11 +1,9 @@
 int main()
 {
   int i;
-  bool b;
+  double b;
 
   i = 42;
-  i = 10;
-  b = true;
-  b = false;
-  i = false; /* Fail: assigning a bool to an integer */
+  b = 25.7;
+  i = 25.7; /* Fail: assigning a double to an integer */
 }

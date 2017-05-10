@@ -1,5 +1,5 @@
 int i;
-bool b;
+double b;
 int j;
 
 int main()

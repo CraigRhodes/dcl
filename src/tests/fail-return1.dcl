@@ -1,4 +1,4 @@
 int main()
 {
-  return true; /* Should return int */
+  return 0.5; /* Should return int */
 }

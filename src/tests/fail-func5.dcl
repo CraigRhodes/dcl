@@ -3,7 +3,7 @@ int foo() {}
 int bar() {
   int a;
   void b; /* Error: illegal void local b */
-  bool c;
+  double c;
 
   return 0;
 }

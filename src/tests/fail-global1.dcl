@@ -1,5 +1,5 @@
 int c;
-bool b;
+double b;
 void a; /* global variables should not be void */
 
 

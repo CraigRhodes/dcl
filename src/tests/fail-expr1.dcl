@@ -1,15 +1,15 @@
 int a;
-bool b;
+double b;
 
-void foo(int c, bool d)    
+void foo(int c, double d)    
 {
   int dd;
-  bool e;
+  double e;
   a + c;
   c - a;
   a * 3;
   c / 2;
-  d + a; /* Error: bool + int */
+  d + a; /* Error: double + int */
 }
 
 int main()

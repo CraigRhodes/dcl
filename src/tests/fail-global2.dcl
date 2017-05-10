@@ -1,5 +1,5 @@
 int b;
-bool c;
+double c;
 int a;
 int b; /* Duplicate global variable */
 

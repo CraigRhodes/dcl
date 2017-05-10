@@ -1,5 +1,5 @@
 
-int x = 0 buteverytime (x==2) { print_line(x); };
+int x = 0 buteverytime (x==2) { print_line(x); }
 
 int main() {
 	x = 2; 

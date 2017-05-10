@@ -1,7 +1,7 @@
-int foo(int a, bool b)
+int foo(int a, double b)
 {
   int c;
-  bool d;
+  double d;
 
   c = a;
 
@@ -9,6 +9,6 @@ int foo(int a, bool b)
 }
 
 int main() {
- print_line(foo(37, false));
+ print_line(foo(37, 3.5));
  return 0;
 }

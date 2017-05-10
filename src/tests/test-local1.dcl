@@ -1,4 +1,4 @@
-void foo(bool i)
+void foo(double i)
 {
   int i; /* Should hide the formal i */
 
@@ -8,6 +8,6 @@ void foo(bool i)
 
 int main()
 {
-  foo(true);
+  foo(3.5);
   return 0;
 }
