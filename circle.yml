@@ -11,7 +11,7 @@ dependencies:
 
 test:
  override:
-  - docker run -it --entrypoint=make -v "`pwd`/src:/home/dcl" craigrhodes/dcl test
+  - docker run -it --entrypoint=./testall.sh  -v "`pwd`/src:/home/dcl" craigrhodes/dcl
 
 deployment:
  prod:
