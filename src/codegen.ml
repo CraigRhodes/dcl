@@ -227,7 +227,7 @@ let translate (globals, functions) =
                               let new_literal = L.build_malloc (ltype_of_typ (A.Simple(A.String))) "arr_literal" builder in
                               let first_store = L.build_struct_gep new_literal 0 "first" builder in
                               let second_store = L.build_struct_gep new_literal 1 "second" builder in
-                              let store_it = L.build_store (L.const_int i32_t 2) first_store builder in
+                              let store_it = L.build_store (L.const_int i32_t 1) first_store builder in
                               let store_it_again = L.build_store new_string second_store builder in
                               let actual_literal = L.build_load new_literal "actual_arr_literal" builder in
                               actual_literal
@@ -323,7 +323,8 @@ let translate (globals, functions) =
                        let str_ptr_e1' = L.build_extractvalue e1' 1 "extract_char_array" builder in
                        let str_ptr_e2' = L.build_extractvalue e2' 1 "extract_char_array" builder in
                        let result = L.build_call strcmp_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
-                       L.build_icmp L.Icmp.Ne result (L.const_int i32_t 0) "tmp" builder) in
+                       let value = L.build_icmp L.Icmp.Ne result (L.const_int i32_t 0) "tmp" builder in
+                       value) in
                      L.build_mul (L.build_intcast result i32_t "convert" builder) (L.const_int i32_t (-1)) "tmp" builder
     | A.Less      -> let result = (
                      if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then    L.build_icmp L.Icmp.Slt e1' e2' "tmp" builder
@@ -362,14 +363,7 @@ let translate (globals, functions) =
                        L.build_icmp L.Icmp.Sge result (L.const_int i32_t 0) "tmp" builder) in
                      L.build_mul (L.build_intcast result i32_t "convert" builder) (L.const_int i32_t (-1)) "tmp" builder
     )
-      | A.TildeOp(id) -> let x = "~" ^ id in 
-                      if Hashtbl.mem expr_store_global x 
-                      then
-                        L.build_load (lookup (x)) x builder 
-                      else
-                        ( ignore (Hashtbl.add expr_store_global x (lookup id) ); L.build_load (lookup (id)) x builder )
-                        (*ignore (Hashtbl.add expr_store_global x () ); L.build_load (lookup (x)) id builder *)
-
+      | A.TildeOp(id) -> let x = "~" ^ id in L.build_load (lookup (x)) x builder           
       | A.Unop(op, e) ->
     let e' = expr builder e in
     (match op with
@@ -443,7 +437,20 @@ let translate (globals, functions) =
        the statement's successor *)
     let rec stmt builder = function
   A.Block sl -> List.fold_left stmt builder sl
-      | A.Expr e -> ignore (expr builder e); ignore (if String.sub fdecl.A.fname 0 2 = "__" then () (* Don't generate calls to callback within a callback *) 
+      | A.Expr e -> let tildes:(string, llvalue) Hashtbl.t = Hashtbl.create 100 in
+                    ignore (if String.sub fdecl.A.fname 0 2 = "__" then () (* Don't generate calls to callback within a callback *) 
+                    else (
+                      let callbackStrMap = StringMap.filter (let x k v = (String.sub k 0 2) = "__" in x ) function_decls in 
+                      let callbackList = StringMap.bindings callbackStrMap in
+                      for j = 0 to ((List.length callbackList) - 1) do
+                        let (key, (fdef, fdec)) = List.nth callbackList j in 
+                        let newStr = String.create ((String.length fdec.A.fname) - 2) in 
+                        let varName = ignore(for i = 0 to ((String.length newStr) - 1) do String.set newStr i (String.get fdec.A.fname (i + 2)) done); newStr in
+                        Hashtbl.add tildes ("~" ^ varName) (L.build_load (lookup varName) varName builder) 
+                      done
+                    ));
+                    ignore (expr builder e); 
+                    ignore (if String.sub fdecl.A.fname 0 2 = "__" then () (* Don't generate calls to callback within a callback *) 
                     else (
                       let callbackStrMap = StringMap.filter (let x k v = (String.sub k 0 2) = "__" in x ) function_decls in 
                       let callbackList = StringMap.bindings callbackStrMap in
@@ -453,17 +460,12 @@ let translate (globals, functions) =
                         let varName = ignore(for i = 0 to ((String.length newStr) - 1) do String.set newStr i (String.get fdec.A.fname (i + 2)) done); newStr in
                         let pass_in = L.build_load (lookup varName) varName builder in
                         let result = "" in
-                        let new_value = (L.build_call fdef [| pass_in |] result builder) in
+                        let new_value = (L.build_call fdef [| pass_in ; Hashtbl.find tildes ("~" ^ varName) |] result builder) in
                         L.build_store new_value (lookup varName) builder
-                        (* Hashtbl.iter (fun a b -> print_endline (L.string_of_llvalue (Hashtbl.find local_vars a)) ; print_endline a) local_vars *)
                       done
-                    ) 
-              ) ; builder
-      | A.Return e -> (*let _ = print_endline fdecl.A.fname in
-                      let e' = expr builder e in
-                      let _ = print_endline (L.string_of_lltype (L.type_of e')) in
-                      let _ = print_endline (L.string_of_lltype (ltype_of_typ fdecl.A.typ)) in*)
-                      ignore (match fdecl.A.typ with
+                    )); 
+                    builder
+      | A.Return e -> ignore (match fdecl.A.typ with
     A.Void -> L.build_ret_void builder
   | _ -> L.build_ret (expr builder e) builder); builder
       | A.If (predicate, then_stmt, else_stmt) ->
