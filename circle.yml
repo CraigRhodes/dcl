@@ -11,11 +11,11 @@ dependencies:
 
 test:
  override:
-  - docker run -it -v "`pwd`/src:/home/dcl-user/dcl" --entrypoint=make craigrhodes/dcl
-  - docker run -v "`pwd`/src:/home/dcl-user/dcl" -it --entrypoint=./testall.sh craigrhodes/dcl
+  - docker run --rm -it -v "`pwd`/src:/home/dcl-user/dcl" --entrypoint=make craigrhodes/dcl
+  - docker run --rm -v "`pwd`/src:/home/dcl-user/dcl" -it --entrypoint=./testall.sh craigrhodes/dcl
 
 deployment:
  prod:
   branch: master
   commands:
-   - docker run -it -v "`pwd`/src:/home/dcl-user/dcl" --entrypoint=make craigrhodes/dcl
+   - docker run --rm -it -v "`pwd`/src:/home/dcl-user/dcl" --entrypoint=make craigrhodes/dcl
