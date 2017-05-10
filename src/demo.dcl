@@ -1,34 +1,71 @@
 /* Bee Movie but every time they say "bee"... */
 
-/*string[] split(string whole, string sep) {
-	...
-}*/
+string[] split(string whole, string sep) {
+	int number_of_parts = 0;
+    int looking_for_parts = 0;
+    int index;
+    for(index = 0; index < #whole; index = index + 1) {
+        if(whole{| index |} == sep) {
+            if(looking_for_parts) {
+                looking_for_parts = 0;
+            }
+        } else {
+            if(!looking_for_parts) {
+                number_of_parts = number_of_parts + 1;
+                looking_for_parts = 1;
+            }
+        }
+    }
+    string[] parts = [number_of_parts of ""];
+    int current_index = 0;
+    looking_for_parts = 0;
+    string current = "";
+    string[] bs = [" hie", "couch", "fddd"];
+    for(index = 0; index < #whole; index = index + 1) {
+        if(whole{| index |} == sep) {
+            if(looking_for_parts) {
+                looking_for_parts = 0;
+                parts[ current_index ] = current;
+                current_index = current_index + 1;
+                current = "";
+            }
+        } else {
+            if(!looking_for_parts) {
+                looking_for_parts = 1;
+            }
+            current = current + whole{| index |};
+        }
+    }
+    parts[ current_index ] = current;
+    return parts;
+}
 
 string join(string[] parts, string sep) {
 	string total = "";
-    for(int i = 0; i < #parts; i = i + 1) {
-        total = total + parts{| i |} + sep;
+    for(int part = 0; part < #parts; part = part + 1) {
+        total = total + parts{| part |} + sep;
     }
     return total;
 }
 
-string current_word = "" buteverytime (current_word == "bee") {
-    current_word = "b++";
+string current_word = "" buteverytime 
+((current_word{| 0 |} == 'b' || current_word{| 1 |} == 'B') &&
+ current_word{| 1 |} == 'e' && current_word{| 2 |} == 'e') {
+    current_word = "     b + +     ";
 }
 
 void main() {
-    print_line(join(["Craig", "doo", "be", "do"], " "));
-    /*string bee_movie_script = read("bee_movie_script.txt");
+    string bee_movie_script = read("bee_movie_script.txt");
     
     string[] bee_movie_words = split(bee_movie_script, " ");
-    string[] modified_bee_movie_words = [length(bee_movie_words) of string];
+    string[] modified_bee_movie_words = [#bee_movie_words of ""];
     
-    for(int i = 0; i < length(bee_movie_words); i = i + 1) {
-        current_word = bee_movie_words[i];
+    for(int i = 0; i < #bee_movie_words; i = i + 1) {
+        current_word = bee_movie_words{|i|};
         modified_bee_movie_words[i] = current_word;
     }
     
-    write("b++_movie_script.txt", join(modified_bee_movie_words, " "));*/
+    write("b++_movie_script.txt", join(modified_bee_movie_words, " "));
 }
 
 /* Would be cool if we fit this on one slide and then highlight it for different parts:
@@ -39,4 +76,3 @@ void main() {
      * Arrays
      * Strings
  */
-/* First slide is scene from Bee Movie */

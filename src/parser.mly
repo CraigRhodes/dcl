@@ -27,7 +27,7 @@ open Ast
 %left TIMES DIVIDE
 %right EXPONT
 %right NOT NEG LENGTH
-%nonassoc LINDEX
+%left LINDEX
 
 %start program
 %type <Ast.program> program

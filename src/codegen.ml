@@ -227,7 +227,7 @@ let translate (globals, functions) =
                               let new_literal = L.build_malloc (ltype_of_typ (A.Simple(A.String))) "arr_literal" builder in
                               let first_store = L.build_struct_gep new_literal 0 "first" builder in
                               let second_store = L.build_struct_gep new_literal 1 "second" builder in
-                              let store_it = L.build_store (L.const_int i32_t 2) first_store builder in
+                              let store_it = L.build_store (L.const_int i32_t 1) first_store builder in
                               let store_it_again = L.build_store new_string second_store builder in
                               let actual_literal = L.build_load new_literal "actual_arr_literal" builder in
                               actual_literal
@@ -323,7 +323,8 @@ let translate (globals, functions) =
                        let str_ptr_e1' = L.build_extractvalue e1' 1 "extract_char_array" builder in
                        let str_ptr_e2' = L.build_extractvalue e2' 1 "extract_char_array" builder in
                        let result = L.build_call strcmp_func [| str_ptr_e1' ; str_ptr_e2' |] "tmp" builder in
-                       L.build_icmp L.Icmp.Ne result (L.const_int i32_t 0) "tmp" builder) in
+                       let value = L.build_icmp L.Icmp.Ne result (L.const_int i32_t 0) "tmp" builder in
+                       value) in
                      L.build_mul (L.build_intcast result i32_t "convert" builder) (L.const_int i32_t (-1)) "tmp" builder
     | A.Less      -> let result = (
                      if      L.type_of e1' == ltype_of_typ (A.Simple(A.Int))    then    L.build_icmp L.Icmp.Slt e1' e2' "tmp" builder
