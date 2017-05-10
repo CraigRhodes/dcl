@@ -64,16 +64,16 @@ parser.cmi : ast.cmo
 # Building the tarball
 
 TESTS = add1 arith1 arith2 arith3 array1 array2 array3 callbacks1 callbacks2 \
-    callbacks3 callbacks4 double1 fib for1 for2 func1 func2 func3	\
+    callbacks3 callbacks4 double1 double2 fib for1 for2 func1 func2 func3	\
     func4 func5 func6 func7 func8 gcd2 gcd global1 global2 global3	\
     hello if1 if2 if3 if4 if5 interleave1 interleave2 interleave3       \
-    local1 local2 ops1 ops2 string1 string2 var1 var2		\
+    local1 local2 ops1 ops2 string1 string2 tilde1 tilde2 tilde3 var1 var2		\
     while1 while2
 
-FAILS = assign1 assign2 assign3 dead1 dead2 expr1 expr2 for1 for2	\
+FAILS = assign1 assign2 assign3 concatenation1 dead1 dead2 exponents1 expr1 expr2 for1 for2	\
     for3 for4 for5 func1 func2 func3 func4 func5 func6 func7 func8	\
-    func9 global1 global2 if1 if2 if3 nomain return1 return2 while1	\
-    while2
+    func9 global1 global2 if1 if2 if3 nomain return1 return2 string1 \
+    string2 string3 while1 while2
 
 TESTFILES = $(TESTS:%=test-%.mc) $(TESTS:%=test-%.out) \
 	    $(FAILS:%=fail-%.mc) $(FAILS:%=fail-%.err)
