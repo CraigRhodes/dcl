@@ -451,9 +451,9 @@ let translate (globals, functions) =
                         let (key, (fdef, fdec)) = List.nth callbackList j in 
                         let newStr = String.create ((String.length fdec.A.fname) - 2) in 
                         let varName = ignore(for i = 0 to ((String.length newStr) - 1) do String.set newStr i (String.get fdec.A.fname (i + 2)) done); newStr in
-                        let actuals = [(findValue varName)] in
+                        let pass_in = L.build_load (lookup varName) varName builder in
                         let result = "" in
-                        let new_value = L.build_call fdef (Array.of_list actuals) result builder in
+                        let new_value = (L.build_call fdef [| pass_in |] result builder) in
                         L.build_store new_value (lookup varName) builder
                         (* Hashtbl.iter (fun a b -> print_endline (L.string_of_llvalue (Hashtbl.find local_vars a)) ; print_endline a) local_vars *)
                       done
