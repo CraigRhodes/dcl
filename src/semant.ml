@@ -6,6 +6,7 @@ open Hashtbl
 open Llvm
 
 module StringMap = Map.Make(String)
+let formals:(string, A.typ) Hashtbl.t = Hashtbl.create 100
 let symbols:(string, A.typ) Hashtbl.t = Hashtbl.create 100 
 let globalsymbols:(string, A.typ) Hashtbl.t = Hashtbl.create 100 
 
@@ -60,8 +61,9 @@ let check (globals, functions) =
 
    let type_of_identifier s =
       try Hashtbl.find symbols s
-      with Not_found -> try Hashtbl.find globalsymbols s
-                        with Not_found -> raise (Failure ("undeclared identifier " ^ s ))
+      with Not_found -> try Hashtbl.find formals s
+                        with Not_found -> try Hashtbl.find globalsymbols s
+                                          with Not_found -> raise (Failure ("undeclared identifier " ^ s ))
     in
 
     (* Return the type of an expression or throw an exception *)
@@ -70,15 +72,6 @@ let check (globals, functions) =
 
   if List.mem "print" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function print may not be defined")) else ();
-
-  if List.mem "print_bool" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function print_bool may not be defined")) else ();
-
-  if List.mem "print_double" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function print_double may not be defined")) else ();
-
-  if List.mem "print_string" (List.map (fun fd -> fd.fname) functions)
-  then raise (Failure ("function print_string may not be defined")) else ();
 
   if List.mem "exp_int" (List.map (fun fd -> fd.fname) functions)
   then raise (Failure ("function exp_int may not be defined")) else ();
@@ -174,7 +167,7 @@ let check (globals, functions) =
       (List.map snd func.formals
       );
 
-    let symbol = List.iter (fun (t, n) -> Hashtbl.add symbols n t )
+    let symbol = List.iter (fun (t, n) -> Hashtbl.add formals n t )
   func.formals
     in
 
